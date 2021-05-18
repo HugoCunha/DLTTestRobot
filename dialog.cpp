@@ -43,6 +43,8 @@ Dialog::Dialog(bool autostart,QString configuration,QWidget *parent)
     connect(&dltTestRobot, SIGNAL(status(QString)), this, SLOT(statusTestRobot(QString)));
     connect(&dltMiniServer, SIGNAL(status(QString)), this, SLOT(statusDlt(QString)));
 
+    connect(&dltTestRobot, SIGNAL(command(int,QString)), this, SLOT(command(int,QString)));
+
     //  load global settings from registry
     QSettings settings;
     QString filename = settings.value("autoload/filename").toString();
@@ -149,7 +151,7 @@ void Dialog::statusTestRobot(QString text)
         ui->lineEditStatusTestRobot->setPalette(palette);
         ui->lineEditStatusTestRobot->setText(text);
     }
-    else if(text == "reconnect")
+    else if(text == "disconnected")
     {
         QPalette palette;
         palette.setColor(QPalette::Base,Qt::yellow);
@@ -308,3 +310,46 @@ void Dialog::on_pushButtonInfo_clicked()
 }
 
 
+
+void Dialog::on_pushButtonSend_clicked()
+{
+    dltTestRobot.send(ui->lineEditMessage->text());
+}
+
+void Dialog::on_pushButtonTestLoad_clicked()
+{
+    // Load test file
+
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Open Tests"), "", tr("DLTTestRobot Tests (*.dtr);;All files (*.*)"));
+
+    if(fileName.isEmpty())
+    {
+        // No file was selected or cancel was pressed
+        return;
+    }
+
+    ui->lineEditTestFile->setText(fileName);
+
+    // read the settings from XML file
+    dltTestRobot.readTests(fileName);
+
+    ui->comboBoxTest->clear();
+    for(int num=0;num<dltTestRobot.size();num++)
+    {
+        ui->comboBoxTest->addItem(QString("%1 %2 (%3)").arg(dltTestRobot.testId(num)).arg(dltTestRobot.testSize(num)).arg(dltTestRobot.testDescription(num)));
+    }
+}
+
+void Dialog::on_pushButtonStartTest_clicked()
+{
+    ui->lineEditTestSize->setText(QString("%1").arg(dltTestRobot.testSize(ui->comboBoxTest->currentIndex())));
+
+    dltTestRobot.startTest(ui->comboBoxTest->currentIndex());
+}
+
+void Dialog::command(int num, QString text)
+{
+    ui->lineEditTestNum->setText(QString("%1").arg(num));
+    ui->lineEditTestCommand->setText(text);
+}

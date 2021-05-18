@@ -53,6 +53,14 @@ private slots:
     void on_pushButtonStart_clicked();
     void on_pushButtonStop_clicked();
 
+    void on_pushButtonSend_clicked();
+
+    void on_pushButtonTestLoad_clicked();
+
+    void on_pushButtonStartTest_clicked();
+
+    void command(int num, QString text);
+
 private:
     Ui::Dialog *ui;
 
