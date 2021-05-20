@@ -79,6 +79,7 @@ void DLTTestRobot::start()
 {
     connect(&tcpSocket, SIGNAL(connected()), this, SLOT(connected()));
     connect(&tcpSocket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+    connect(&tcpSocket, SIGNAL(readyRead()), this, SLOT(readyRead()));
 
     tcpSocket.connectToHost("localhost",4490);
 
@@ -93,17 +94,23 @@ void DLTTestRobot::stop()
 
     disconnect(&tcpSocket, SIGNAL(connected()), this, SLOT(connected()));
     disconnect(&tcpSocket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+    disconnect(&tcpSocket, SIGNAL(readyRead()), this, SLOT(readyRead()));
 
     timer.stop();
     disconnect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
+
+    currentTest = -1;
+    currentCmd = -1;
 
     status("stopped");
 }
 
 void DLTTestRobot::clearSettings()
 {
+    timer.stop();
+
     currentTest = -1;
-    currentCmd = 0;
+    currentCmd = -1;
 }
 
 void DLTTestRobot::writeSettings(QXmlStreamWriter &xml)
@@ -157,6 +164,73 @@ void DLTTestRobot::readSettings(const QString &filename)
 
 void DLTTestRobot::readyRead()
 {
+    // data on was received
+    while (tcpSocket.canReadLine())
+    {
+        QString text = QString(tcpSocket.readLine());
+
+        if(text.size()>0 && currentCmd!=-1 && currentTest!=-1)
+        {
+            text.chop(1);
+
+            // line is not empty
+            qDebug() << "DltTestRobot: readLine" << text;
+
+            QStringList list = text.split(' ');
+
+            QString currentCommand = tests[currentTest].at(currentCmd);
+            command(currentCmd+1,currentCommand);
+            QStringList listCommand = currentCommand.split(' ');
+
+            if(listCommand.size()>=8 && list.size()>=5 && listCommand[0]=="find" && listCommand[3]==list[0] && listCommand[4]==list[1] && listCommand[5]==list[2])
+            {
+                if(listCommand[1]=="equal")
+                {
+                    qDebug() << "DltTestRobot: find equal" << list.join(' ');
+                    list.removeAt(0);
+                    list.removeAt(0);
+                    list.removeAt(0);
+                    list.removeAt(0);
+                    list.removeAt(0);
+                    list.removeAt(0);
+                    if(text.contains(list.join(' ')))
+                    {
+                        qDebug() << "DltTestRobot: find equal matches";
+                        timer.stop();
+                        currentCmd++;
+                        runTest();
+                    }
+                }
+                else if(listCommand[1]=="greater" && listCommand[6]==list[3])
+                {
+                    float value = list[4].toFloat();
+                    float commandValue = listCommand[7].toFloat();
+                    qDebug() << "DltTestRobot: find greater" << commandValue;
+                    if(value>commandValue)
+                    {
+                        qDebug() << "DltTestRobot: find greater matches";
+                        timer.stop();
+                        currentCmd++;
+                        runTest();
+                    }
+                }
+                else if(listCommand[1]=="smaller" && listCommand[6]==list[3])
+                {
+                    float value = list[4].toFloat();
+                    float commandValue = listCommand[7].toFloat();
+                    qDebug() << "DltTestRobot: find smaller" << commandValue;
+                    if(value<commandValue)
+                    {
+                        qDebug() << "DltTestRobot: find smaller matches";
+                        timer.stop();
+                        currentCmd++;
+                        runTest();
+                    }
+                }
+            }
+
+        }
+    }
 
 }
 
@@ -191,6 +265,8 @@ void DLTTestRobot::readTests(const QString &filename)
         qDebug() << "DLTTestRobot: failed to open file" << filename;
         return;
     }
+
+    tests.clear();
 
     DLTTest test;
     bool isTest=false;
@@ -269,11 +345,16 @@ void DLTTestRobot::runTest()
 
         QStringList list = currentCommand.split(' ');
 
-        if(list[0]=="wait")
+        if(list.size()>=2 && list[0]=="wait")
         {
             timer.start(list[1].toUInt());
-            qDebug() << "DLTTestRobot: start timer" << list[1].toUInt();
-            currentCmd++;
+            qDebug() << "DLTTestRobot: start wait timer" << list[1].toUInt();
+            return;
+        }
+        else if(list.size()>=3 && list[0]=="find")
+        {
+            timer.start(list[2].toUInt());
+            qDebug() << "DLTTestRobot: start find timer" << list[2].toUInt();
             return;
         }
         else
@@ -288,6 +369,8 @@ void DLTTestRobot::runTest()
 
     qDebug() << "DLTTestRobot: end test" << tests[currentTest].getId();
 
+    currentTest = -1;
+    currentCmd = -1;
 }
 
 void DLTTestRobot::timeout()
@@ -295,6 +378,8 @@ void DLTTestRobot::timeout()
     timer.stop();
 
     qDebug() << "DLTTestRobot: timer expired";
+
+    currentCmd++;
 
     runTest();
 }
