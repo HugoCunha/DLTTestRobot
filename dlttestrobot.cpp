@@ -179,21 +179,20 @@ void DLTTestRobot::readyRead()
             QStringList list = text.split(' ');
 
             QString currentCommand = tests[currentTest].at(currentCmd);
-            command(currentCmd+1,currentCommand);
             QStringList listCommand = currentCommand.split(' ');
 
             if(listCommand.size()>=8 && list.size()>=5 && listCommand[0]=="find" && listCommand[3]==list[0] && listCommand[4]==list[1] && listCommand[5]==list[2])
             {
                 if(listCommand[1]=="equal")
                 {
-                    qDebug() << "DltTestRobot: find equal" << list.join(' ');
-                    list.removeAt(0);
-                    list.removeAt(0);
-                    list.removeAt(0);
-                    list.removeAt(0);
-                    list.removeAt(0);
-                    list.removeAt(0);
-                    if(text.contains(list.join(' ')))
+                    listCommand.removeAt(0);
+                    listCommand.removeAt(0);
+                    listCommand.removeAt(0);
+                    listCommand.removeAt(0);
+                    listCommand.removeAt(0);
+                    listCommand.removeAt(0);
+                    qDebug() << "DltTestRobot: find equal" << listCommand.join(' ');
+                    if(text.contains(listCommand.join(' ')))
                     {
                         qDebug() << "DltTestRobot: find equal matches";
                         timer.stop();
@@ -329,6 +328,8 @@ void DLTTestRobot::startTest(int num)
     currentTest = num;
     currentCmd = 0;
 
+
+
     qDebug() << "DLTTestRobot: start test" << tests[currentTest].getId();
 
     runTest();
@@ -365,7 +366,7 @@ void DLTTestRobot::runTest()
     }
 
     // end reached
-    command(tests[currentTest].size(),"end");
+    command(tests[currentTest].size(),"end success");
 
     qDebug() << "DLTTestRobot: end test" << tests[currentTest].getId();
 
@@ -378,6 +379,21 @@ void DLTTestRobot::timeout()
     timer.stop();
 
     qDebug() << "DLTTestRobot: timer expired";
+
+    QString currentCommand = tests[currentTest].at(currentCmd);
+    QStringList list = currentCommand.split(' ');
+
+    if(list.size()>=1 && list[0]!="wait")
+    {
+        command(currentCmd+1,"failed");
+
+        qDebug() << "DLTTestRobot: end test" << tests[currentTest].getId();
+
+        currentTest = -1;
+        currentCmd = -1;
+
+        return;
+    }
 
     currentCmd++;
 

@@ -345,6 +345,8 @@ void Dialog::on_pushButtonStartTest_clicked()
 {
     ui->lineEditTestSize->setText(QString("%1").arg(dltTestRobot.testSize(ui->comboBoxTest->currentIndex())));
 
+    dltMiniServer.sendValue2("test start ",dltTestRobot.testId(ui->comboBoxTest->currentIndex()));
+
     dltTestRobot.startTest(ui->comboBoxTest->currentIndex());
 }
 
@@ -352,4 +354,29 @@ void Dialog::command(int num, QString text)
 {
     ui->lineEditTestNum->setText(QString("%1").arg(num));
     ui->lineEditTestCommand->setText(text);
+
+    if(text=="end success")
+    {
+        QPalette palette;
+        palette.setColor(QPalette::Base,Qt::green);
+        ui->lineEditTestCommand->setPalette(palette);
+        ui->lineEditTestCommand->setText(text);
+        dltMiniServer.sendValue2("test end success",dltTestRobot.testId(ui->comboBoxTest->currentIndex()));
+    }
+    else if(text=="failed")
+    {
+        QPalette palette;
+        palette.setColor(QPalette::Base,Qt::red);
+        ui->lineEditTestCommand->setPalette(palette);
+        ui->lineEditTestCommand->setText(text);
+        dltMiniServer.sendValue2("test failed",dltTestRobot.testId(ui->comboBoxTest->currentIndex()),DLT_LOG_FATAL);
+    }
+    else
+    {
+        QPalette palette;
+        palette.setColor(QPalette::Base,Qt::white);
+        ui->lineEditTestCommand->setPalette(palette);
+        ui->lineEditTestCommand->setText(text);
+        dltMiniServer.sendValue3("test step",QString("%1").arg(num),text);
+    }
 }

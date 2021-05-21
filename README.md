@@ -12,6 +12,46 @@ https://github.com/GENIVI/dlt-viewer
 
 * Init status
 
+## Protocol with DLT Viewer Plugin DLTTestRobot
+
+The DLTTestRobot application sets up a TCP connection at Port 4490 with the DLT Viewer plugin.
+The protocol is based on ASCII commands. Each command is terminated by a newline '\n'.
+The follwoing commands are currently supported:
+
+* filter clear
+* filter add <ecuId> <appId> <ctxId>
+* injection <ecuId> <command>
+
+The DLt Viewer plugin sends back the filtered DLT messages in the format ending with a newline '\n':
+
+<ecuId> <appId> <ctxId> <decoded payload>
+
+## Fileformat of test description *.dtr
+
+All simulation and test commands can be written into a text file.
+Multiple tests can be defined in a single file.
+All empty lines and lines beginning with a ';' character will be ignored as comments
+
+The following commands are used in 
+
+* test id <name_without_seperators>
+* test description <extended description>
+* test begin
+* <test command1>
+* <test command2>
+* <test commandx>
+* test end
+
+The following test commands inside a test can be used:
+
+* filter clear
+* filter add <ecuId> <appId> <ctxId>
+* injection <ecuId> <command>
+* sleep <time in ms>
+* find equal <time in ms> <ecuId> <appId> <ctxId> <find text>
+* find greater <time in ms> <ecuId> <appId> <ctxId> <valueId> <value>
+* find smaller <time in ms> <ecuId> <appId> <ctxId> <valueId> <value>
+
 ## Installation
 
 To build this SW the Qt Toolchain must be used.
