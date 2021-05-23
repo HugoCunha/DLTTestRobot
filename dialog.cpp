@@ -43,13 +43,15 @@ Dialog::Dialog(bool autostart,QString configuration,QWidget *parent)
     connect(&dltTestRobot, SIGNAL(status(QString)), this, SLOT(statusTestRobot(QString)));
     connect(&dltMiniServer, SIGNAL(status(QString)), this, SLOT(statusDlt(QString)));
 
-    connect(&dltTestRobot, SIGNAL(command(int,QString)), this, SLOT(command(int,QString)));
+    connect(&dltTestRobot, SIGNAL(command(int,int,int,int,int,int,int,QString)), this, SLOT(command(int,int,int,int,int,int,int,QString)));
 
     //  load global settings from registry
     QSettings settings;
     QString filename = settings.value("autoload/filename").toString();
     bool autoload = settings.value("autoload/checked").toBool();
     bool autostartGlobal = settings.value("autostart/checked").toBool();
+    bool autoloadTests = settings.value("autoloadTests/checked").toBool();
+    QString filenameTests = settings.value("autoloadTests/filename").toString();
 
     // autoload settings, when activated in global settings
     if(autoload)
@@ -57,6 +59,13 @@ Dialog::Dialog(bool autostart,QString configuration,QWidget *parent)
         dltTestRobot.readSettings(filename);
         dltMiniServer.readSettings(filename);
         restoreSettings();
+    }
+
+    // autoload tests, when activated in global settings
+    if(autoloadTests)
+    {
+        ui->checkBoxAutoloadTests->setChecked(true);
+        loadTests(filenameTests);
     }
 
     // autoload settings, when provided by command line
@@ -309,13 +318,6 @@ void Dialog::on_pushButtonInfo_clicked()
     msgBox.exec();
 }
 
-
-
-void Dialog::on_pushButtonSend_clicked()
-{
-    dltTestRobot.send(ui->lineEditMessage->text());
-}
-
 void Dialog::on_pushButtonTestLoad_clicked()
 {
     // Load test file
@@ -329,54 +331,106 @@ void Dialog::on_pushButtonTestLoad_clicked()
         return;
     }
 
+    QSettings settings;
+    settings.setValue("autoloadTests/filename",fileName);
+
+    loadTests(fileName);
+}
+
+void Dialog::loadTests(QString fileName)
+{
     ui->lineEditTestFile->setText(fileName);
 
     // read the settings from XML file
     dltTestRobot.readTests(fileName);
 
-    ui->comboBoxTest->clear();
+    ui->comboBoxTestName->clear();
     for(int num=0;num<dltTestRobot.size();num++)
     {
-        ui->comboBoxTest->addItem(QString("%1 %2 (%3)").arg(dltTestRobot.testId(num)).arg(dltTestRobot.testSize(num)).arg(dltTestRobot.testDescription(num)));
+        ui->comboBoxTestName->addItem(QString("%1 %2 (%3)").arg(dltTestRobot.testId(num)).arg(dltTestRobot.testSize(num)).arg(dltTestRobot.testDescription(num)));
     }
 }
 
 void Dialog::on_pushButtonStartTest_clicked()
 {
-    ui->lineEditTestSize->setText(QString("%1").arg(dltTestRobot.testSize(ui->comboBoxTest->currentIndex())));
+    ui->lineEditCmdNo->setText(QString("%1/%2").arg(0).arg(dltTestRobot.testSize(ui->comboBoxTestName->currentIndex())));
 
-    dltMiniServer.sendValue2("test start ",dltTestRobot.testId(ui->comboBoxTest->currentIndex()));
+    dltMiniServer.sendValue2("test start ",dltTestRobot.testId(ui->comboBoxTestName->currentIndex()));
 
-    dltTestRobot.startTest(ui->comboBoxTest->currentIndex());
+    if(ui->checkBoxRunAllTest->isChecked())
+        dltTestRobot.startTest(-1,ui->lineEditRepeat->text().toInt());
+    else
+        dltTestRobot.startTest(ui->comboBoxTestName->currentIndex(),ui->lineEditRepeat->text().toInt());
 }
 
-void Dialog::command(int num, QString text)
+void Dialog::on_pushButtonStopTest_clicked()
 {
-    ui->lineEditTestNum->setText(QString("%1").arg(num));
-    ui->lineEditTestCommand->setText(text);
+    dltTestRobot.stopTest();
+
+    dltMiniServer.sendValue("test stopped ",DLT_LOG_FATAL);
+}
+
+void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,int testRepeat,int testNum, int commandNum,int commandCount, QString text)
+{
+    ui->lineEditCmdNo->setText(QString("%1/%2").arg(commandNum+1).arg(commandCount));
+    ui->lineEditCurrentCommand->setText(text);
+    ui->lineEditRepeatNo->setText(QString("%1/%2").arg(allTestRepeatNum+1).arg(allTestRepeat));
+    ui->lineEditTestRepeatNo->setText(QString("%1/%2").arg(testRepeatNum+1).arg(testRepeat));
+    ui->lineEditCurrentTest->setText(QString("%1 (%2)").arg(dltTestRobot.testId(testNum)).arg(dltTestRobot.testDescription(testNum)));
+    ui->lineEditFailed->setText(QString("%1").arg(dltTestRobot.getFailed()));
+
+    if(dltTestRobot.getFailed()>0)
+    {
+        QPalette palette;
+        palette.setColor(QPalette::Base,Qt::red);
+        ui->lineEditFailed->setPalette(palette);
+    }
+    else
+    {
+        QPalette palette;
+        palette.setColor(QPalette::Base,Qt::green);
+        ui->lineEditFailed->setPalette(palette);
+    }
 
     if(text=="end success")
     {
         QPalette palette;
         palette.setColor(QPalette::Base,Qt::green);
-        ui->lineEditTestCommand->setPalette(palette);
-        ui->lineEditTestCommand->setText(text);
-        dltMiniServer.sendValue2("test end success",dltTestRobot.testId(ui->comboBoxTest->currentIndex()));
+        ui->lineEditCurrentCommand->setPalette(palette);
+        ui->lineEditCurrentCommand->setText(text);
+        dltMiniServer.sendValue2("test end success",dltTestRobot.testId(ui->comboBoxTestName->currentIndex()));
     }
     else if(text=="failed")
     {
         QPalette palette;
         palette.setColor(QPalette::Base,Qt::red);
-        ui->lineEditTestCommand->setPalette(palette);
-        ui->lineEditTestCommand->setText(text);
-        dltMiniServer.sendValue2("test failed",dltTestRobot.testId(ui->comboBoxTest->currentIndex()),DLT_LOG_FATAL);
+        ui->lineEditCurrentCommand->setPalette(palette);
+        ui->lineEditCurrentCommand->setText(text);
+        dltMiniServer.sendValue2("test failed",dltTestRobot.testId(ui->comboBoxTestName->currentIndex()),DLT_LOG_FATAL);
+    }
+    else if(text=="stopped")
+    {
+        QPalette palette;
+        palette.setColor(QPalette::Base,Qt::red);
+        ui->lineEditCurrentCommand->setPalette(palette);
+        ui->lineEditCurrentCommand->setText(text);
     }
     else
     {
         QPalette palette;
         palette.setColor(QPalette::Base,Qt::white);
-        ui->lineEditTestCommand->setPalette(palette);
-        ui->lineEditTestCommand->setText(text);
-        dltMiniServer.sendValue3("test step",QString("%1").arg(num),text);
+        ui->lineEditCurrentCommand->setPalette(palette);
+        ui->lineEditCurrentCommand->setText(text);
+        dltMiniServer.sendValue3("test step",QString("%1").arg(commandNum),text);
     }
+}
+
+void Dialog::on_checkBoxAutoloadTests_clicked(bool checked)
+{
+    QSettings settings;
+    settings.setValue("autoloadTests/checked",checked);
+}
+
+void Dialog::on_checkBoxRunAllTest_clicked(bool checked)
+{
 }

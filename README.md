@@ -28,14 +28,15 @@ The DLt Viewer plugin sends back the filtered DLT messages in the format ending 
 
 ## Fileformat of test description *.dtr
 
-All simulation and test commands can be written into a text file.
-Multiple tests can be defined in a single file.
+All simulation and test commands are written into a text file.
+Multiple tests are defined in a single file.
 All empty lines and lines beginning with a ';' character will be ignored as comments
 
-The following commands are used in 
+The following commands are used in the test file 
 
 * test id <name_without_seperators>
 * test description <extended description>
+* test repeat <number>
 * test begin
 * <test command1>
 * <test command2>
@@ -87,6 +88,13 @@ Github Sponsors:
 [:heart: Sponsor](https://github.com/sponsors/alexmucde)
 
 ## Changes
+
+v0.0.2:
+
+* Repeat single test
+* Run all tests
+* Repeat all tests
+* Stop tests
 
 v0.0.1:
 

@@ -20,7 +20,7 @@
 
 DLTTest::DLTTest()
 {
-
+    clear();
 }
 
 DLTTest::~DLTTest()
@@ -42,6 +42,7 @@ void DLTTest::clear()
     commands.clear();
     id="";
     description="";
+    repeat = 1;
 }
 
 QString DLTTest::getId() const
@@ -62,6 +63,16 @@ QString DLTTest::getDescription() const
 void DLTTest::setDescription(const QString &value)
 {
     description = value;
+}
+
+int DLTTest::getRepeat() const
+{
+    return repeat;
+}
+
+void DLTTest::setRepeat(int value)
+{
+    repeat = value;
 }
 
 
@@ -99,8 +110,8 @@ void DLTTestRobot::stop()
     timer.stop();
     disconnect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
 
-    currentTest = -1;
-    currentCmd = -1;
+    testNum = -1;
+    commandNum = -1;
 
     status("stopped");
 }
@@ -109,8 +120,8 @@ void DLTTestRobot::clearSettings()
 {
     timer.stop();
 
-    currentTest = -1;
-    currentCmd = -1;
+    testNum = -1;
+    commandNum = -1;
 }
 
 void DLTTestRobot::writeSettings(QXmlStreamWriter &xml)
@@ -169,7 +180,7 @@ void DLTTestRobot::readyRead()
     {
         QString text = QString(tcpSocket.readLine());
 
-        if(text.size()>0 && currentCmd!=-1 && currentTest!=-1)
+        if(text.size()>0 && commandNum!=-1 && testNum!=-1)
         {
             text.chop(1);
 
@@ -178,7 +189,7 @@ void DLTTestRobot::readyRead()
 
             QStringList list = text.split(' ');
 
-            QString currentCommand = tests[currentTest].at(currentCmd);
+            QString currentCommand = tests[testNum].at(commandNum);
             QStringList listCommand = currentCommand.split(' ');
 
             if(listCommand.size()>=8 && list.size()>=5 && listCommand[0]=="find" && listCommand[3]==list[0] && listCommand[4]==list[1] && listCommand[5]==list[2])
@@ -196,7 +207,7 @@ void DLTTestRobot::readyRead()
                     {
                         qDebug() << "DltTestRobot: find equal matches";
                         timer.stop();
-                        currentCmd++;
+                        commandNum++;
                         runTest();
                     }
                 }
@@ -209,7 +220,7 @@ void DLTTestRobot::readyRead()
                     {
                         qDebug() << "DltTestRobot: find greater matches";
                         timer.stop();
-                        currentCmd++;
+                        commandNum++;
                         runTest();
                     }
                 }
@@ -222,7 +233,7 @@ void DLTTestRobot::readyRead()
                     {
                         qDebug() << "DltTestRobot: find smaller matches";
                         timer.stop();
-                        currentCmd++;
+                        commandNum++;
                         runTest();
                     }
                 }
@@ -296,8 +307,14 @@ void DLTTestRobot::readTests(const QString &filename)
                else if(list[1]=="description")
                {
                    list.removeAt(0);
+                   list.removeAt(0);
                    qDebug() << "DLTTestRobot: description" << list.join(' ');
                    test.setDescription(list.join(' '));
+               }
+               else if(list[1]=="repeat")
+               {
+                   qDebug() << "DLTTestRobot: repeat" << list[2];
+                   test.setRepeat(list[2].toInt());
                }
                else if(list[1]=="begin")
                {
@@ -323,26 +340,56 @@ void DLTTestRobot::readTests(const QString &filename)
     file.close();
 }
 
-void DLTTestRobot::startTest(int num)
+void DLTTestRobot::startTest(int num,int repeat)
 {
-    currentTest = num;
-    currentCmd = 0;
+    if(repeat<1)
+        allTestRepeat = 1;
+    else
+        allTestRepeat = repeat;
+    allTestRepeatNum = 0;
 
+    if(num<0)
+    {
+        allTests = true;
+        testNum = 0;
+    }
+    else
+    {
+        allTests = false;
+        testNum = num;
+    }
+    testCount = tests.size();
 
+    testRepeat = tests[testNum].getRepeat();
+    testRepeatNum = 0;
 
-    qDebug() << "DLTTestRobot: start test" << tests[currentTest].getId();
+    commandCount = tests[testNum].size();
+    commandNum = 0;
+
+    failed = 0;
+
+    qDebug() << "DLTTestRobot: start test" << tests[testNum].getId();
 
     runTest();
 }
 
+void DLTTestRobot::stopTest()
+{
+    timer.stop();
+
+    command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"stopped");
+
+    qDebug() << "DLTTestRobot: stopped test" ;
+}
+
 void DLTTestRobot::runTest()
 {
-    while(currentCmd<tests[currentTest].size())
+    while(commandNum<commandCount)
     {
 
-        QString currentCommand = tests[currentTest].at(currentCmd);
+        QString currentCommand = tests[testNum].at(commandNum);
 
-        command(currentCmd+1,currentCommand);
+        command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,currentCommand);
 
         QStringList list = currentCommand.split(' ');
 
@@ -362,16 +409,82 @@ void DLTTestRobot::runTest()
         {
             send(currentCommand);
         }
-        currentCmd++;
+        commandNum++;
+    }
+    // end reached
+    command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"end success");
+
+    qDebug() << "DLTTestRobot: end test" << tests[testNum].getId();
+
+    nextTest();
+}
+
+bool DLTTestRobot::nextTest()
+{
+    testRepeatNum++;
+    if(testRepeatNum<testRepeat)
+    {
+        commandCount = tests[testNum].size();
+        commandNum = 0;
+
+        qDebug() << "DLTTestRobot: start test" << tests[testNum].getId();
+
+        runTest();
+        return true;
     }
 
-    // end reached
-    command(tests[currentTest].size(),"end success");
+    if(allTests)
+    {
+        testNum++;
+        if(testNum<testCount)
+        {
+            testRepeat = tests[testNum].getRepeat();
+            testRepeatNum = 0;
 
-    qDebug() << "DLTTestRobot: end test" << tests[currentTest].getId();
+            commandCount = tests[testNum].size();
+            commandNum = 0;
 
-    currentTest = -1;
-    currentCmd = -1;
+            qDebug() << "DLTTestRobot: start test" << tests[testNum].getId();
+
+            runTest();
+            return true;
+        }
+    }
+
+    allTestRepeatNum++;
+    if(allTestRepeatNum<allTestRepeat)
+    {
+        if(allTests)
+        {
+            testNum = 0;
+        }
+
+        testRepeat = tests[testNum].getRepeat();
+        testRepeatNum = 0;
+
+        commandCount = tests[testNum].size();
+        commandNum = 0;
+
+        qDebug() << "DLTTestRobot: start test" << tests[testNum].getId();
+
+        runTest();
+        return true;
+    }
+
+    testNum = -1;
+    commandNum = -1;
+
+    return false;
+}
+
+int DLTTestRobot::getFailed() const
+{
+    return failed;
+}
+
+void DLTTestRobot::setFailed(int value)
+{
+    failed = value;
 }
 
 void DLTTestRobot::timeout()
@@ -380,22 +493,22 @@ void DLTTestRobot::timeout()
 
     qDebug() << "DLTTestRobot: timer expired";
 
-    QString currentCommand = tests[currentTest].at(currentCmd);
+    QString currentCommand = tests[testNum].at(commandNum);
     QStringList list = currentCommand.split(' ');
 
     if(list.size()>=1 && list[0]!="wait")
     {
-        command(currentCmd+1,"failed");
+        failed++;
+        command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"failed");
 
-        qDebug() << "DLTTestRobot: end test" << tests[currentTest].getId();
+        qDebug() << "DLTTestRobot: end test" << tests[testNum].getId();
 
-        currentTest = -1;
-        currentCmd = -1;
+        nextTest();
 
         return;
     }
 
-    currentCmd++;
+    commandNum++;
 
     runTest();
 }

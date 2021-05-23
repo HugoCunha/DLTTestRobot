@@ -53,13 +53,17 @@ private slots:
     void on_pushButtonStart_clicked();
     void on_pushButtonStop_clicked();
 
-    void on_pushButtonSend_clicked();
-
     void on_pushButtonTestLoad_clicked();
 
     void on_pushButtonStartTest_clicked();
 
-    void command(int num, QString text);
+    void command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,int testRepeat,int testNum, int commandNum,int commandCount, QString text);
+
+    void on_checkBoxAutoloadTests_clicked(bool checked);
+
+    void on_pushButtonStopTest_clicked();
+
+    void on_checkBoxRunAllTest_clicked(bool checked);
 
 private:
     Ui::Dialog *ui;
@@ -70,6 +74,8 @@ private:
     // Settings
     void restoreSettings();
     void updateSettings();
+
+    void loadTests(QString fileName);
 
 };
 #endif // DIALOG_H

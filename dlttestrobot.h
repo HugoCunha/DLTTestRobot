@@ -42,10 +42,14 @@ public:
     void append(const QString &text) {  commands.append(text); }
     QString at(int num) { return commands[num]; }
 
+    int getRepeat() const;
+    void setRepeat(int value);
+
 private:
     QString id;
     QString description;
     QStringList commands;
+    int repeat;
 };
 
 class DLTTestRobot : public QObject
@@ -71,12 +75,16 @@ public:
     QString testDescription(int num) { return tests[num].getDescription(); }
     int testSize(int num) { return tests[num].size(); }
 
-    void startTest(int num);
+    void startTest(int num = -1,int repeat = 1);
+    void stopTest();
+
+    int getFailed() const;
+    void setFailed(int value);
 
 signals:
 
     void status(QString text);
-    void command(int num, QString text);
+    void command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,int testRepeat,int testNum, int commandNum,int commandCount, QString text);
 
 private slots:
 
@@ -89,6 +97,7 @@ private slots:
 private:
 
     void runTest();
+    bool nextTest();
 
     QTimer timer;
     unsigned int watchDogCounter,watchDogCounterLast;
@@ -97,8 +106,20 @@ private:
 
     QList<DLTTest> tests;
 
-    int currentTest;
-    int currentCmd;
+    int allTestRepeat;
+    int allTestRepeatNum;
+
+    bool allTests;
+    int testCount;
+    int testNum;
+
+    int testRepeat;
+    int testRepeatNum;
+
+    int commandCount;
+    int commandNum;
+
+    int failed;
 
 };
 
