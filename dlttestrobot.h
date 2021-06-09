@@ -88,9 +88,11 @@ signals:
 
 private slots:
 
+    void hostFound();
     void readyRead();
     void connected();
     void disconnected();
+    void error(QAbstractSocket::SocketError);
 
     void timeout();
 

@@ -91,12 +91,14 @@ void DLTTestRobot::start()
     connect(&tcpSocket, SIGNAL(connected()), this, SLOT(connected()));
     connect(&tcpSocket, SIGNAL(disconnected()), this, SLOT(disconnected()));
     connect(&tcpSocket, SIGNAL(readyRead()), this, SLOT(readyRead()));
+    connect(&tcpSocket, SIGNAL(hostFound()), this, SLOT(hostFound()));
+    connect(&tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(error(QAbstractSocket::SocketError)));
 
     tcpSocket.connectToHost("localhost",4490);
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
 
-    status("started");
+    status("connect");
 }
 
 void DLTTestRobot::stop()
@@ -106,6 +108,8 @@ void DLTTestRobot::stop()
     disconnect(&tcpSocket, SIGNAL(connected()), this, SLOT(connected()));
     disconnect(&tcpSocket, SIGNAL(disconnected()), this, SLOT(disconnected()));
     disconnect(&tcpSocket, SIGNAL(readyRead()), this, SLOT(readyRead()));
+    disconnect(&tcpSocket, SIGNAL(hostFound()), this, SLOT(hostFound()));
+    disconnect(&tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(error(QAbstractSocket::SocketError)));
 
     timer.stop();
     disconnect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
@@ -247,14 +251,30 @@ void DLTTestRobot::readyRead()
 void DLTTestRobot::connected()
 {
     status("connected");
-    qDebug() << "DLTTestRobot: connected";
 
+    qDebug() << "DLTTestRobot: connected";
 }
 
 void DLTTestRobot::disconnected()
 {
     status("disconnected");
+
     qDebug() << "DLTTestRobot: disconnected";
+
+    tcpSocket.connectToHost("localhost",4490);
+}
+
+void DLTTestRobot::hostFound()
+{
+    qDebug() << "DLTTestRobot: hostFound";
+}
+
+void DLTTestRobot::error(QAbstractSocket::SocketError socketError)
+{
+    qDebug() << "DLTTestRobot: error" << socketError;
+
+    if(tcpSocket.state()==QAbstractSocket::UnconnectedState)
+        tcpSocket.connectToHost("localhost",4490);
 }
 
 void DLTTestRobot::send(QString text)

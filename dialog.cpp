@@ -118,7 +118,7 @@ void Dialog::on_pushButtonStart_clicked()
     ui->pushButtonLoadSettings->setDisabled(true);
     ui->pushButtonSettings->setDisabled(true);
 
-    connect(&dltTestRobot, SIGNAL(message(unsigned int,QByteArray)), this, SLOT(message(unsigned int,QByteArray)));
+    //connect(&dltTestRobot, SIGNAL(message(unsigned int,QByteArray)), this, SLOT(message(unsigned int,QByteArray)));
 
 }
 
@@ -126,7 +126,7 @@ void Dialog::on_pushButtonStop_clicked()
 {
     // stop communication
 
-    disconnect(&dltTestRobot, SIGNAL(message(unsigned int,QByteArray)), this, SLOT(message(unsigned int,QByteArray)));
+    //disconnect(&dltTestRobot, SIGNAL(message(unsigned int,QByteArray)), this, SLOT(message(unsigned int,QByteArray)));
 
     // stop Relais and DLT communication
     dltTestRobot.stop();
@@ -153,14 +153,14 @@ void Dialog::statusTestRobot(QString text)
         ui->lineEditStatusTestRobot->setPalette(palette);
         ui->lineEditStatusTestRobot->setText(text);
     }
-    else if(text == "started")
+    else if(text == "connected")
     {
         QPalette palette;
         palette.setColor(QPalette::Base,Qt::green);
         ui->lineEditStatusTestRobot->setPalette(palette);
         ui->lineEditStatusTestRobot->setText(text);
     }
-    else if(text == "disconnected")
+    else if(text == "connect" || text == "disconnected")
     {
         QPalette palette;
         palette.setColor(QPalette::Base,Qt::yellow);

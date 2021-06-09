@@ -91,6 +91,10 @@ Github Sponsors:
 
 v0.0.2:
 
+* Automatic reconnect DLTTestRobot
+
+v0.0.2:
+
 * Repeat single test
 * Run all tests
 * Repeat all tests
