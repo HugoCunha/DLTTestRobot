@@ -390,6 +390,8 @@ void DLTTestRobot::startTest(int num,int repeat)
 
     qDebug() << "DLTTestRobot: start test" << tests[testNum].getId();
 
+    command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"started");
+
     runTest();
 }
 
@@ -449,6 +451,8 @@ bool DLTTestRobot::nextTest()
 
         qDebug() << "DLTTestRobot: start test" << tests[testNum].getId();
 
+        command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"started");
+
         runTest();
         return true;
     }
@@ -465,6 +469,8 @@ bool DLTTestRobot::nextTest()
             commandNum = 0;
 
             qDebug() << "DLTTestRobot: start test" << tests[testNum].getId();
+
+            command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"started");
 
             runTest();
             return true;
@@ -486,6 +492,8 @@ bool DLTTestRobot::nextTest()
         commandNum = 0;
 
         qDebug() << "DLTTestRobot: start test" << tests[testNum].getId();
+
+        command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"started");
 
         runTest();
         return true;

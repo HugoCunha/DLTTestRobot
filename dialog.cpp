@@ -355,12 +355,14 @@ void Dialog::on_pushButtonStartTest_clicked()
 {
     ui->lineEditCmdNo->setText(QString("%1/%2").arg(0).arg(dltTestRobot.testSize(ui->comboBoxTestName->currentIndex())));
 
-    dltMiniServer.sendValue2("test start ",dltTestRobot.testId(ui->comboBoxTestName->currentIndex()));
-
     if(ui->checkBoxRunAllTest->isChecked())
+    {
         dltTestRobot.startTest(-1,ui->lineEditRepeat->text().toInt());
+    }
     else
+    {
         dltTestRobot.startTest(ui->comboBoxTestName->currentIndex(),ui->lineEditRepeat->text().toInt());
+    }
 }
 
 void Dialog::on_pushButtonStopTest_clicked()
@@ -392,13 +394,21 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         ui->lineEditFailed->setPalette(palette);
     }
 
-    if(text=="end success")
+    if(text=="started")
     {
         QPalette palette;
         palette.setColor(QPalette::Base,Qt::green);
         ui->lineEditCurrentCommand->setPalette(palette);
         ui->lineEditCurrentCommand->setText(text);
-        dltMiniServer.sendValue2("test end success",dltTestRobot.testId(ui->comboBoxTestName->currentIndex()));
+        dltMiniServer.sendValue2("test start",dltTestRobot.testId(testNum));
+    }
+    else if(text=="end success")
+    {
+        QPalette palette;
+        palette.setColor(QPalette::Base,Qt::green);
+        ui->lineEditCurrentCommand->setPalette(palette);
+        ui->lineEditCurrentCommand->setText(text);
+        dltMiniServer.sendValue2("test end success",dltTestRobot.testId(testNum));
     }
     else if(text=="failed")
     {
@@ -406,7 +416,7 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         palette.setColor(QPalette::Base,Qt::red);
         ui->lineEditCurrentCommand->setPalette(palette);
         ui->lineEditCurrentCommand->setText(text);
-        dltMiniServer.sendValue2("test failed",dltTestRobot.testId(ui->comboBoxTestName->currentIndex()),DLT_LOG_FATAL);
+        dltMiniServer.sendValue2("test failed",dltTestRobot.testId(testNum),DLT_LOG_FATAL);
     }
     else if(text=="stopped")
     {
