@@ -89,6 +89,10 @@ Github Sponsors:
 
 ## Changes
 
+v0.1.0:
+
+* Fix DLT Test output
+
 v0.0.2:
 
 * Automatic reconnect DLTTestRobot
