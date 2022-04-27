@@ -89,6 +89,10 @@ Github Sponsors:
 
 ## Changes
 
+v0.1.1:
+
+* Update build script to Qt 5.15.2 and MSVC 2019
+
 v0.1.0:
 
 * Fix DLT Test output
