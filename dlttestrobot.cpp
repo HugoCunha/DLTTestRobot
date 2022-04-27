@@ -397,9 +397,15 @@ void DLTTestRobot::startTest(int num,int repeat)
 
 void DLTTestRobot::stopTest()
 {
-    timer.stop();
+    if(testNum != -1 && commandNum!=-1)
+    {
+        timer.stop();
 
-    command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"stopped");
+        command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"stopped");
+
+        testNum = -1;
+        commandNum = -1;
+    }
 
     qDebug() << "DLTTestRobot: stopped test" ;
 }
