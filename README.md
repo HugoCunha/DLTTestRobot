@@ -91,6 +91,8 @@ Github Sponsors:
 
 v0.1.2:
 
+* First version of test report
+* Rearange UI
 * Show list of commands
 
 v0.1.1:

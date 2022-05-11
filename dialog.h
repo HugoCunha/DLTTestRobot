@@ -20,6 +20,8 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QSettings>
+#include <QFile>
+#include <QDateTime>
 
 #include "dlttestrobot.h"
 #include "dltminiserver.h"
@@ -70,6 +72,8 @@ private:
 
     DLTTestRobot dltTestRobot;
     DLTMiniServer dltMiniServer;
+
+    QFile report;
 
     // Settings
     void restoreSettings();
