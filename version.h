@@ -15,6 +15,6 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define DLT_TEST_ROBOT_VERSION "v0.1.1"
+#define DLT_TEST_ROBOT_VERSION "v0.1.2"
 
 #endif // VERSION_H

@@ -401,6 +401,9 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         ui->lineEditCurrentCommand->setPalette(palette);
         ui->lineEditCurrentCommand->setText(text);
         dltMiniServer.sendValue2("test start",dltTestRobot.testId(testNum));
+        ui->listWidgetCommands->clear();
+        ui->listWidgetCommands->addItems(dltTestRobot.getTest(testNum).getCommands());
+        ui->listWidgetCommands->setCurrentRow(commandNum);
     }
     else if(text=="end success")
     {
@@ -430,7 +433,8 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         QPalette palette;
         palette.setColor(QPalette::Base,Qt::white);
         ui->lineEditCurrentCommand->setPalette(palette);
-        ui->lineEditCurrentCommand->setText(text);
+        ui->lineEditCurrentCommand->setText("running");
+        ui->listWidgetCommands->setCurrentRow(commandNum);
         dltMiniServer.sendValue3("test step",QString("%1").arg(commandNum),text);
     }
 }

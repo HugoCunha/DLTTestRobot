@@ -45,6 +45,8 @@ public:
     int getRepeat() const;
     void setRepeat(int value);
 
+    const QStringList &getCommands() const;
+
 private:
     QString id;
     QString description;
@@ -80,6 +82,8 @@ public:
 
     int getFailed() const;
     void setFailed(int value);
+
+    DLTTest getTest(int num) { return tests[num]; }
 
 signals:
 

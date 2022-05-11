@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>664</width>
-    <height>401</height>
+    <width>486</width>
+    <height>955</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -36,6 +36,12 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="1">
     <widget class="QGroupBox" name="groupBox_8">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="title">
       <string>Status</string>
      </property>
@@ -47,17 +53,17 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="lineEditStatusDLT">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
        <widget class="QLabel" name="label_7">
         <property name="text">
          <string>DLT Server:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="lineEditStatusDLT">
+        <property name="readOnly">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -68,121 +74,108 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
      </layout>
     </widget>
    </item>
-   <item row="2" column="1">
-    <widget class="QGroupBox" name="groupBox">
-     <property name="title">
-      <string>Test Status</string>
+   <item row="1" column="0" rowspan="2" colspan="2">
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-     <layout class="QGridLayout" name="gridLayout_5">
-      <item row="9" column="1" colspan="2">
-       <widget class="QLineEdit" name="lineEditFailed">
+     <property name="title">
+      <string>Test Configuration</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="9" column="2">
+       <widget class="QPushButton" name="pushButtonStopTest">
+        <property name="text">
+         <string>Stop Tests</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="3">
+       <widget class="QLineEdit" name="lineEditTestFile">
         <property name="autoFillBackground">
          <bool>true</bool>
         </property>
         <property name="readOnly">
          <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0" colspan="3">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Current Command:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QLineEdit" name="lineEditCmdNo">
-        <property name="autoFillBackground">
-         <bool>true</bool>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QLineEdit" name="lineEditTestRepeatNo">
-        <property name="autoFillBackground">
-         <bool>true</bool>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>Current Test:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Test Repeat No.:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0" colspan="3">
-       <widget class="QLineEdit" name="lineEditCurrentCommand">
-        <property name="autoFillBackground">
-         <bool>true</bool>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="3">
-       <widget class="QLineEdit" name="lineEditCurrentTest"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Cmd No.:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>Failed:</string>
         </property>
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_11">
+       <widget class="QLabel" name="label">
         <property name="text">
-         <string>All Repeat No.:</string>
+         <string>Test file:</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
-       <widget class="QLineEdit" name="lineEditRepeatNo"/>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="checkBoxAutoloadTests">
+        <property name="text">
+         <string>Autoload Tests</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Repeat:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Test Name:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="checkBoxRunAllTest">
+        <property name="text">
+         <string>Run all tests</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0" colspan="2">
+       <widget class="QPushButton" name="pushButtonStartTest">
+        <property name="text">
+         <string>Start Tests</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="3">
+       <widget class="QPushButton" name="pushButtonTestLoad">
+        <property name="text">
+         <string>Load...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0" colspan="3">
+       <widget class="QComboBox" name="comboBoxTestName"/>
+      </item>
+      <item row="8" column="1" colspan="2">
+       <widget class="QLineEdit" name="lineEditRepeat">
+        <property name="text">
+         <string>1</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
    </item>
    <item row="0" column="0">
     <widget class="QGroupBox" name="groupBox_6">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="title">
       <string>Settings</string>
      </property>
@@ -251,45 +244,31 @@
      </layout>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QGroupBox" name="groupBox_2">
+   <item row="3" column="0" colspan="2">
+    <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Test Configuration</string>
+      <string>Test Status</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_4">
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="checkBoxAutoloadTests">
-        <property name="text">
-         <string>Autoload Tests</string>
-        </property>
-       </widget>
-      </item>
+     <layout class="QGridLayout" name="gridLayout_5">
       <item row="4" column="0">
-       <widget class="QCheckBox" name="checkBoxRunAllTest">
+       <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Run all tests</string>
+         <string>Status:</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="0" colspan="3">
-       <widget class="QComboBox" name="comboBoxTestName"/>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="lineEditRepeatNo"/>
       </item>
-      <item row="9" column="2">
-       <widget class="QPushButton" name="pushButtonStopTest">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_11">
         <property name="text">
-         <string>Stop Tests</string>
+         <string>All Repeat No.:</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="1" colspan="2">
-       <widget class="QLineEdit" name="lineEditRepeat">
-        <property name="text">
-         <string>1</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0" colspan="3">
-       <widget class="QLineEdit" name="lineEditTestFile">
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="lineEditCmdNo">
         <property name="autoFillBackground">
          <bool>true</bool>
         </property>
@@ -298,40 +277,83 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_10">
         <property name="text">
-         <string>Test file:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="3">
-       <widget class="QPushButton" name="pushButtonTestLoad">
-        <property name="text">
-         <string>Load...</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0" colspan="2">
-       <widget class="QPushButton" name="pushButtonStartTest">
-        <property name="text">
-         <string>Start Tests</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="label_8">
-        <property name="text">
-         <string>Repeat:</string>
+         <string>Current Test:</string>
         </property>
        </widget>
       </item>
       <item row="6" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="label_12">
         <property name="text">
-         <string>Test Name:</string>
+         <string>Commands:</string>
         </property>
        </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Test Repeat No.:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Cmd No.:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QLineEdit" name="lineEditTestRepeatNo">
+        <property name="autoFillBackground">
+         <bool>true</bool>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0" colspan="4">
+       <widget class="QListWidget" name="listWidgetCommands">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="lineEditCurrentCommand">
+        <property name="autoFillBackground">
+         <bool>true</bool>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Failed:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QLineEdit" name="lineEditFailed">
+        <property name="autoFillBackground">
+         <bool>true</bool>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="3">
+       <widget class="QLineEdit" name="lineEditCurrentTest"/>
       </item>
      </layout>
     </widget>

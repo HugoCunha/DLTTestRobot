@@ -75,6 +75,11 @@ void DLTTest::setRepeat(int value)
     repeat = value;
 }
 
+const QStringList &DLTTest::getCommands() const
+{
+    return commands;
+}
+
 
 DLTTestRobot::DLTTestRobot(QObject *parent) : QObject(parent)
 {

@@ -89,6 +89,10 @@ Github Sponsors:
 
 ## Changes
 
+v0.1.2:
+
+* Show list of commands
+
 v0.1.1:
 
 * Fixed stopping tests
