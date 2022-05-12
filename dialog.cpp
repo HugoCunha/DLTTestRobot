@@ -145,7 +145,7 @@ void Dialog::statusTestRobot(QString text)
 {
     // status from Test Robot
 
-    // status of CAN communication changed
+    // status of Test Robot communication changed
     if(text == "" || text == "stopped" || text == "not active")
     {
         QPalette palette;
@@ -309,7 +309,7 @@ void Dialog::on_pushButtonInfo_clicked()
     text += "<br>";
     text += "This SW is licensed under GPLv3.<br>";
     text += "<br>";
-    text += "(C) 2021 Alexander Wenzel <alex@eli2.de>";
+    text += "(C) 2022 Alexander Wenzel <alex@eli2.de>";
 
     msgBox.setText(text);
 
@@ -354,6 +354,16 @@ void Dialog::loadTests(QString fileName)
 void Dialog::on_pushButtonStartTest_clicked()
 {
     ui->lineEditCmdNo->setText(QString("%1/%2").arg(0).arg(dltTestRobot.testSize(ui->comboBoxTestName->currentIndex())));
+
+    // write to report
+    QTime time = QTime::currentTime();
+    QDate date = QDate::currentDate();
+    if(report.isOpen())
+        report.close();
+    report.setFileName(date.toString("yyyyMMdd_")+time.toString("HHmmss_")+"TestReport.txt");
+    report.open(QIODevice::WriteOnly | QIODevice::Text);
+    report.write(QString("Starting tests at %1 %2\n").arg(date.toString("dd.MM.yyyy")).arg(time.toString("HH:mm:ss")).toLatin1());
+    report.flush();
 
     if(ui->checkBoxRunAllTest->isChecked())
     {
@@ -404,11 +414,10 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         ui->listWidgetCommands->clear();
         ui->listWidgetCommands->addItems(dltTestRobot.getTest(testNum).getCommands());
         ui->listWidgetCommands->setCurrentRow(commandNum);
+
+        // write to report
         QTime time = QTime::currentTime();
-        QDate date = QDate::currentDate();
-        report.setFileName(date.toString("yyyyMMdd_")+time.toString("HHmmss_")+"TestReport.txt");
-        report.open(QIODevice::WriteOnly | QIODevice::Text);
-        report.write(QString("%1 test start %2\n").arg(time.toString("HH:mm:ss")).arg(dltTestRobot.testId(testNum)).toLatin1());
+        report.write(QString("\n%1 test start %2 (%3/%4)\n").arg(time.toString("HH:mm:ss")).arg(dltTestRobot.testId(testNum)).arg(testRepeatNum+1).arg(testRepeat).toLatin1());
         report.flush();
     }
     else if(text=="end success")
@@ -418,9 +427,11 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         ui->lineEditCurrentCommand->setPalette(palette);
         ui->lineEditCurrentCommand->setText(text);
         dltMiniServer.sendValue2("test end success",dltTestRobot.testId(testNum));
+
+        // write to report
         QTime time = QTime::currentTime();
         report.write(QString("%1 test end SUCCESS\n").arg(time.toString("HH:mm:ss")).toLatin1());
-        report.close();
+        report.flush();
     }
     else if(text=="failed")
     {
@@ -429,9 +440,11 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         ui->lineEditCurrentCommand->setPalette(palette);
         ui->lineEditCurrentCommand->setText(text);
         dltMiniServer.sendValue2("test failed",dltTestRobot.testId(testNum),DLT_LOG_FATAL);
+
+        // write to report
         QTime time = QTime::currentTime();
         report.write(QString("%1 test FAILED\n").arg(time.toString("HH:mm:ss")).toLatin1());
-        report.close();
+        report.flush();
     }
     else if(text=="stopped")
     {
@@ -439,9 +452,11 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         palette.setColor(QPalette::Base,Qt::red);
         ui->lineEditCurrentCommand->setPalette(palette);
         ui->lineEditCurrentCommand->setText(text);
+
+        // write to report
         QTime time = QTime::currentTime();
         report.write(QString("%1 test STOPPED\n").arg(time.toString("HH:mm:ss")).toLatin1());
-        report.close();
+        report.flush();
     }
     else
     {
@@ -451,6 +466,8 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         ui->lineEditCurrentCommand->setText("running");
         ui->listWidgetCommands->setCurrentRow(commandNum);
         dltMiniServer.sendValue3("test step",QString("%1").arg(commandNum),text);
+
+        // write to report
         QTime time = QTime::currentTime();
         report.write(QString("%1 test step %2 %3\n").arg(time.toString("HH:mm:ss")).arg(commandNum).arg(text).toLatin1());
         report.flush();

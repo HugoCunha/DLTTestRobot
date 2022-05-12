@@ -91,6 +91,7 @@ Github Sponsors:
 
 v0.1.2:
 
+* One test report for all test jobs
 * First version of test report
 * Rearange UI
 * Show list of commands
