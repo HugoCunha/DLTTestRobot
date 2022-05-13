@@ -201,7 +201,7 @@ void DLTTestRobot::readyRead()
             QString currentCommand = tests[testNum].at(commandNum);
             QStringList listCommand = currentCommand.split(' ');
 
-            if(listCommand.size()>=8 && list.size()>=5 && listCommand[0]=="find" && listCommand[3]==list[0] && listCommand[4]==list[1] && listCommand[5]==list[2])
+            if(listCommand.size()>=7 && list.size()>=5 && listCommand[0]=="find" && listCommand[3]==list[0] && listCommand[4]==list[1] && listCommand[5]==list[2])
             {
                 if(listCommand[1]=="equal")
                 {

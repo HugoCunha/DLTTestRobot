@@ -466,6 +466,7 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         report.write(QString("\nTests end at %1 %2\n").arg(date.toString("dd.MM.yyyy")).arg(time.toString("HH:mm:ss")).toLatin1());
 
         report.close();
+
         dltTestRobot.send(QString("clearFile"));
     }
     else if(text=="failed")
