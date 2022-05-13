@@ -74,6 +74,8 @@ private:
     DLTMiniServer dltMiniServer;
 
     QFile report;
+    QStringList reportSummary;
+    int reportFailedCounter,reportSuccessCounter;
 
     // Settings
     void restoreSettings();

@@ -73,9 +73,9 @@ public:
     void send(QString text);
 
     int size() { return tests.size(); }
-    QString testId(int num) { return tests[num].getId(); }
-    QString testDescription(int num) { return tests[num].getDescription(); }
-    int testSize(int num) { return tests[num].size(); }
+    QString testId(int num) { if(num>=0 && num<tests.length()) return tests[num].getId(); else return QString(); }
+    QString testDescription(int num) { if(num>=0 && num<tests.length()) return tests[num].getDescription(); else return QString(); }
+    int testSize(int num) { if(num>=0 && num<tests.length()) return tests[num].size(); else return 0; }
 
     void startTest(int num = -1,int repeat = 1);
     void stopTest();
@@ -83,7 +83,9 @@ public:
     int getFailed() const;
     void setFailed(int value);
 
-    DLTTest getTest(int num) { return tests[num]; }
+    DLTTest getTest(int num) { if(num>=0 && num<tests.length()) return tests[num]; else return DLTTest(); }
+
+    const QString &getTestsFilename() const;
 
 signals:
 
@@ -111,6 +113,8 @@ private:
     QTcpSocket tcpSocket;
 
     QList<DLTTest> tests;
+
+    QString testsFilename;
 
     int allTestRepeat;
     int allTestRepeatNum;

@@ -301,6 +301,8 @@ void DLTTestRobot::readTests(const QString &filename)
         return;
     }
 
+    testsFilename = filename;
+
     tests.clear();
 
     DLTTest test;
@@ -510,10 +512,19 @@ bool DLTTestRobot::nextTest()
         return true;
     }
 
+    command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"end");
+
     testNum = -1;
     commandNum = -1;
 
+    qDebug() << "DLTTestRobot: all tests done" ;
+
     return false;
+}
+
+const QString &DLTTestRobot::getTestsFilename() const
+{
+    return testsFilename;
 }
 
 int DLTTestRobot::getFailed() const
