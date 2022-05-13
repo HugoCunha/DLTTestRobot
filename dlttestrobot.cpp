@@ -356,6 +356,10 @@ void DLTTestRobot::readTests(const QString &filename)
                    test.clear();
                }
            }
+           else if(list[0]=="version")
+           {
+               version = list[1];
+           }
            else if(isTest)
            {
                qDebug() << "DLTTestRobot: command" << line;
@@ -520,6 +524,11 @@ bool DLTTestRobot::nextTest()
     qDebug() << "DLTTestRobot: all tests done" ;
 
     return false;
+}
+
+const QString &DLTTestRobot::getVersion() const
+{
+    return version;
 }
 
 const QString &DLTTestRobot::getTestsFilename() const

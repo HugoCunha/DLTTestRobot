@@ -87,6 +87,8 @@ public:
 
     const QString &getTestsFilename() const;
 
+    const QString &getVersion() const;
+
 signals:
 
     void status(QString text);
@@ -115,6 +117,8 @@ private:
     QList<DLTTest> tests;
 
     QString testsFilename;
+
+    QString version;
 
     int allTestRepeat;
     int allTestRepeatNum;

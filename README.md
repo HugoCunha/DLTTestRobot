@@ -21,6 +21,13 @@ The follwoing commands are currently supported:
 * filter clear
 * filter add <ecuId> <appId> <ctxId>
 * injection <ecuId> <command>
+* newFile <filename>
+* openFile <filename>
+* saveAsFile <filename>
+* reopenFile
+* clearfile
+* quitDltViewer
+* marker
 
 The DLt Viewer plugin sends back the filtered DLT messages in the format ending with a newline '\n':
 
@@ -32,7 +39,11 @@ All simulation and test commands are written into a text file.
 Multiple tests are defined in a single file.
 All empty lines and lines beginning with a ';' character will be ignored as comments
 
-The following commands are used in the test file 
+The following general commands are used
+
+* version <versionnumber>
+
+The following commands are used in each test
 
 * test id <name_without_seperators>
 * test description <extended description>
@@ -91,6 +102,7 @@ Github Sponsors:
 
 v0.1.2:
 
+* Test version output
 * Test report with summary in folder reports
 * One test report for all test jobs
 * First version of test report

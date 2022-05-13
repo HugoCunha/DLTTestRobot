@@ -366,7 +366,8 @@ void Dialog::on_pushButtonStartTest_clicked()
     report.setFileName(date.toString("reports\\yyyyMMdd_")+time.toString("HHmmss_")+QFileInfo(dltTestRobot.getTestsFilename()).baseName()+"_TestReport.txt");
     report.open(QIODevice::WriteOnly | QIODevice::Text);
     report.write(QString("Starting tests at %1 %2\n").arg(date.toString("dd.MM.yyyy")).arg(time.toString("HH:mm:ss")).toLatin1());
-    report.write(QString("\nTest File: %1\n\n").arg(dltTestRobot.getTestsFilename()).toLatin1());
+    report.write(QString("\nTest File: %1\n").arg(dltTestRobot.getTestsFilename()).toLatin1());
+    report.write(QString("\nTest Version: %1\n\n").arg(dltTestRobot.getVersion()).toLatin1());
     report.flush();
 
     dltMiniServer.sendValue2("Tests start",QFileInfo(dltTestRobot.getTestsFilename()).baseName());
