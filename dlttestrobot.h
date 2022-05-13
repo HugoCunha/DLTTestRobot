@@ -94,6 +94,7 @@ public:
 signals:
 
     void status(QString text);
+    void text(QString text);
     void command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,int testRepeat,int testNum, int commandNum,int commandCount, QString text);
 
 private slots:

@@ -43,6 +43,7 @@ private slots:
     // Status of Test Robot and DLT connection
     void statusTestRobot(QString text);
     void statusDlt(QString text);
+    void text(QString text);
 
     // Settings and Info
     void on_pushButtonSettings_clicked();

@@ -214,6 +214,7 @@ void DLTTestRobot::readyRead()
                     qDebug() << "DltTestRobot: find equal" << listCommand.join(' ');
                     if(text.contains(listCommand.join(' ')))
                     {
+                        emit this->text(text);
                         qDebug() << "DltTestRobot: find equal matches";
                         timer.stop();
                         commandNum++;
@@ -227,6 +228,7 @@ void DLTTestRobot::readyRead()
                     qDebug() << "DltTestRobot: find greater" << commandValue;
                     if(value>commandValue)
                     {
+                        emit this->text(list[4]);
                         qDebug() << "DltTestRobot: find greater matches";
                         timer.stop();
                         commandNum++;
@@ -240,6 +242,7 @@ void DLTTestRobot::readyRead()
                     qDebug() << "DltTestRobot: find smaller" << commandValue;
                     if(value<commandValue)
                     {
+                        emit this->text(list[4]);
                         qDebug() << "DltTestRobot: find smaller matches";
                         timer.stop();
                         commandNum++;

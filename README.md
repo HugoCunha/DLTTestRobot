@@ -102,6 +102,7 @@ Github Sponsors:
 
 v0.1.2:
 
+* Output found DLT message
 * Fixed DLT find single word
 * DLT file output also in reports directory
 * Marker when test fails

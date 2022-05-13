@@ -42,6 +42,7 @@ Dialog::Dialog(bool autostart,QString configuration,QWidget *parent)
 
     // connect status slots
     connect(&dltTestRobot, SIGNAL(status(QString)), this, SLOT(statusTestRobot(QString)));
+    connect(&dltTestRobot, SIGNAL(text(QString)), this, SLOT(text(QString)));
     connect(&dltMiniServer, SIGNAL(status(QString)), this, SLOT(statusDlt(QString)));
 
     connect(&dltTestRobot, SIGNAL(command(int,int,int,int,int,int,int,QString)), this, SLOT(command(int,int,int,int,int,int,int,QString)));
@@ -207,6 +208,13 @@ void Dialog::statusDlt(QString text)
         palette.setColor(QPalette::Base,Qt::red);
         ui->lineEditStatusDLT->setPalette(palette);
     }
+}
+
+void Dialog::text(QString text)
+{
+    // write to report
+    QTime time = QTime::currentTime();
+    report.write(QString("=> %1 %2\n").arg(time.toString("HH:mm:ss")).arg(text).toLatin1());
 }
 
 void Dialog::on_pushButtonDefaultSettings_clicked()
