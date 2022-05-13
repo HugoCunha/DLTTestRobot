@@ -89,6 +89,8 @@ public:
 
     const QString &getVersion() const;
 
+    bool getAllTests() const;
+
 signals:
 
     void status(QString text);

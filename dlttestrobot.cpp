@@ -526,6 +526,11 @@ bool DLTTestRobot::nextTest()
     return false;
 }
 
+bool DLTTestRobot::getAllTests() const
+{
+    return allTests;
+}
+
 const QString &DLTTestRobot::getVersion() const
 {
     return version;

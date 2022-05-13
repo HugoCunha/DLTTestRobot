@@ -16,6 +16,7 @@
 #include <QFileDialog>
 #include <QFile>
 #include <QMessageBox>
+#include <QDir>
 
 #include "dialog.h"
 #include "ui_dialog.h"
@@ -370,6 +371,8 @@ void Dialog::on_pushButtonStartTest_clicked()
     report.write(QString("\nTest Version: %1\n\n").arg(dltTestRobot.getVersion()).toLatin1());
     report.flush();
 
+    dltTestRobot.send(QString("newFile ")+QDir::currentPath()+date.toString("\\reports\\yyyyMMdd_")+time.toString("HHmmss_")+QFileInfo(dltTestRobot.getTestsFilename()).baseName()+".dlt");
+
     dltMiniServer.sendValue2("Tests start",QFileInfo(dltTestRobot.getTestsFilename()).baseName());
 
     if(ui->checkBoxRunAllTest->isChecked())
@@ -463,6 +466,7 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         report.write(QString("\nTests end at %1 %2\n").arg(date.toString("dd.MM.yyyy")).arg(time.toString("HH:mm:ss")).toLatin1());
 
         report.close();
+        dltTestRobot.send(QString("clearFile"));
     }
     else if(text=="failed")
     {
@@ -479,6 +483,8 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
 
         reportSummary.append(QString("FAILED %1 (%2/%3)").arg(dltTestRobot.testId(testNum)).arg(testRepeatNum+1).arg(testRepeat));
         reportFailedCounter++;
+        dltTestRobot.send(QString("marker"));
+
     }
     else if(text=="stopped")
     {
@@ -499,6 +505,7 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         report.write(QString("\nTests STOPPED at %1 %2\n").arg(date.toString("dd.MM.yyyy")).arg(time.toString("HH:mm:ss")).toLatin1());
 
         report.close();
+        dltTestRobot.send(QString("clearFile"));
     }
     else
     {

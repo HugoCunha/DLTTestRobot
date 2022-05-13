@@ -102,6 +102,8 @@ Github Sponsors:
 
 v0.1.2:
 
+* DLT file output also in reports directory
+* Marker when test fails
 * Test version output
 * Test report with summary in folder reports
 * One test report for all test jobs
