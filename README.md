@@ -104,6 +104,7 @@ Github Sponsors:
 
 v0.1.2:
 
+* Single tests gets Report name dependend on test id
 * All tests enabled by default
 * Connect and Disconnect all ECUs in DLT Viewer
 * New command to measure power consumption and write to report summary

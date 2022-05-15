@@ -379,14 +379,21 @@ void Dialog::on_pushButtonStartTest_clicked()
     reportSummaryList.clear();
     reportFailedCounter=0;
     reportSuccessCounter=0;
-    reportFile.setFileName(date.toString("reports\\yyyyMMdd_")+time.toString("HHmmss_")+QFileInfo(dltTestRobot.getTestsFilename()).baseName()+"_TestReport.txt");
+    if(ui->checkBoxRunAllTest->isChecked())
+        reportFile.setFileName(date.toString("reports\\yyyyMMdd_")+time.toString("HHmmss_")+QFileInfo(dltTestRobot.getTestsFilename()).baseName()+"_TestReport.txt");
+    else
+        reportFile.setFileName(date.toString("reports\\yyyyMMdd_")+time.toString("HHmmss_")+dltTestRobot.testId(ui->comboBoxTestName->currentIndex())+"_TestReport.txt");
     reportFile.open(QIODevice::WriteOnly | QIODevice::Text);
     reportFile.write(QString("Starting tests at %1 %2\n").arg(date.toString("dd.MM.yyyy")).arg(time.toString("HH:mm:ss")).toLatin1());
     reportFile.write(QString("\nTest File: %1\n").arg(dltTestRobot.getTestsFilename()).toLatin1());
     reportFile.write(QString("\nTest Version: %1\n\n").arg(dltTestRobot.getVersion()).toLatin1());
     reportFile.flush();
 
-    dltTestRobot.send(QString("newFile ")+QDir::currentPath()+date.toString("\\reports\\yyyyMMdd_")+time.toString("HHmmss_")+QFileInfo(dltTestRobot.getTestsFilename()).baseName()+".dlt");
+    if(ui->checkBoxRunAllTest->isChecked())
+        dltTestRobot.send(QString("newFile ")+QDir::currentPath()+date.toString("\\reports\\yyyyMMdd_")+time.toString("HHmmss_")+QFileInfo(dltTestRobot.getTestsFilename()).baseName()+"_Logs.dlt");
+    else
+        dltTestRobot.send(QString("newFile ")+QDir::currentPath()+date.toString("\\reports\\yyyyMMdd_")+time.toString("HHmmss_")+dltTestRobot.testId(ui->comboBoxTestName->currentIndex())+"_Logs.dlt");
+
     dltTestRobot.send(QString("connectAllEcu"));
 
     QEventLoop loop;
@@ -396,13 +403,9 @@ void Dialog::on_pushButtonStartTest_clicked()
     dltMiniServer.sendValue2("Tests start",QFileInfo(dltTestRobot.getTestsFilename()).baseName());
 
     if(ui->checkBoxRunAllTest->isChecked())
-    {
         dltTestRobot.startTest(-1,ui->lineEditRepeat->text().toInt());
-    }
     else
-    {
         dltTestRobot.startTest(ui->comboBoxTestName->currentIndex(),ui->lineEditRepeat->text().toInt());
-    }
 }
 
 void Dialog::on_pushButtonStopTest_clicked()
