@@ -42,7 +42,8 @@ Dialog::Dialog(bool autostart,QString configuration,QWidget *parent)
 
     // connect status slots
     connect(&dltTestRobot, SIGNAL(status(QString)), this, SLOT(statusTestRobot(QString)));
-    connect(&dltTestRobot, SIGNAL(text(QString)), this, SLOT(text(QString)));
+    connect(&dltTestRobot, SIGNAL(report(QString)), this, SLOT(report(QString)));
+    connect(&dltTestRobot, SIGNAL(reportSummary(QString)), this, SLOT(reportSummary(QString)));
     connect(&dltMiniServer, SIGNAL(status(QString)), this, SLOT(statusDlt(QString)));
 
     connect(&dltTestRobot, SIGNAL(command(int,int,int,int,int,int,int,QString)), this, SLOT(command(int,int,int,int,int,int,int,QString)));
@@ -210,11 +211,17 @@ void Dialog::statusDlt(QString text)
     }
 }
 
-void Dialog::text(QString text)
+void Dialog::report(QString text)
 {
     // write to report
     QTime time = QTime::currentTime();
-    report.write(QString("=> %1 %2\n").arg(time.toString("HH:mm:ss")).arg(text).toLatin1());
+    reportFile.write(QString("=> %1 %2\n").arg(time.toString("HH:mm:ss")).arg(text).toLatin1());
+}
+
+void Dialog::reportSummary(QString text)
+{
+    // write to report
+    reportSummaryList.append(text);
 }
 
 void Dialog::on_pushButtonDefaultSettings_clicked()
@@ -367,19 +374,24 @@ void Dialog::on_pushButtonStartTest_clicked()
     // create and write to report
     QTime time = QTime::currentTime();
     QDate date = QDate::currentDate();
-    if(report.isOpen())
-        report.close();
-    reportSummary.clear();
+    if(reportFile.isOpen())
+        reportFile.close();
+    reportSummaryList.clear();
     reportFailedCounter=0;
     reportSuccessCounter=0;
-    report.setFileName(date.toString("reports\\yyyyMMdd_")+time.toString("HHmmss_")+QFileInfo(dltTestRobot.getTestsFilename()).baseName()+"_TestReport.txt");
-    report.open(QIODevice::WriteOnly | QIODevice::Text);
-    report.write(QString("Starting tests at %1 %2\n").arg(date.toString("dd.MM.yyyy")).arg(time.toString("HH:mm:ss")).toLatin1());
-    report.write(QString("\nTest File: %1\n").arg(dltTestRobot.getTestsFilename()).toLatin1());
-    report.write(QString("\nTest Version: %1\n\n").arg(dltTestRobot.getVersion()).toLatin1());
-    report.flush();
+    reportFile.setFileName(date.toString("reports\\yyyyMMdd_")+time.toString("HHmmss_")+QFileInfo(dltTestRobot.getTestsFilename()).baseName()+"_TestReport.txt");
+    reportFile.open(QIODevice::WriteOnly | QIODevice::Text);
+    reportFile.write(QString("Starting tests at %1 %2\n").arg(date.toString("dd.MM.yyyy")).arg(time.toString("HH:mm:ss")).toLatin1());
+    reportFile.write(QString("\nTest File: %1\n").arg(dltTestRobot.getTestsFilename()).toLatin1());
+    reportFile.write(QString("\nTest Version: %1\n\n").arg(dltTestRobot.getVersion()).toLatin1());
+    reportFile.flush();
 
     dltTestRobot.send(QString("newFile ")+QDir::currentPath()+date.toString("\\reports\\yyyyMMdd_")+time.toString("HHmmss_")+QFileInfo(dltTestRobot.getTestsFilename()).baseName()+".dlt");
+    dltTestRobot.send(QString("connectAllEcu"));
+
+    QEventLoop loop;
+    QTimer::singleShot(3000, &loop, SLOT(quit()));
+    loop.exec();
 
     dltMiniServer.sendValue2("Tests start",QFileInfo(dltTestRobot.getTestsFilename()).baseName());
 
@@ -435,8 +447,8 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
 
         // write to report
         QTime time = QTime::currentTime();
-        report.write(QString("\n%1 test start %2 (%3/%4)\n").arg(time.toString("HH:mm:ss")).arg(dltTestRobot.testId(testNum)).arg(testRepeatNum+1).arg(testRepeat).toLatin1());
-        report.flush();
+        reportFile.write(QString("\n%1 test start %2 (%3/%4)\n").arg(time.toString("HH:mm:ss")).arg(dltTestRobot.testId(testNum)).arg(testRepeatNum+1).arg(testRepeat).toLatin1());
+        reportFile.flush();
     }
     else if(text=="end success")
     {
@@ -448,10 +460,10 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
 
         // write to report
         QTime time = QTime::currentTime();
-        report.write(QString("%1 test end SUCCESS\n").arg(time.toString("HH:mm:ss")).toLatin1());
-        report.flush();
+        reportFile.write(QString("%1 test end SUCCESS\n").arg(time.toString("HH:mm:ss")).toLatin1());
+        reportFile.flush();
 
-        reportSummary.append(QString("SUCCESS %1 (%2/%3)").arg(dltTestRobot.testId(testNum)).arg(testRepeatNum+1).arg(testRepeat));
+        reportSummaryList.append(QString("SUCCESS %1 (%2/%3)").arg(dltTestRobot.testId(testNum)).arg(testRepeatNum+1).arg(testRepeat));
         reportSuccessCounter++;
     }
     else if(text=="end")
@@ -462,19 +474,14 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         ui->lineEditCurrentCommand->setText(text);
         dltMiniServer.sendValue2("Tests end",QFileInfo(dltTestRobot.getTestsFilename()).baseName());
 
-        // write summary
-        QTime time = QTime::currentTime();
-        QDate date = QDate::currentDate();
-        report.write(QString("\nSummary\n").toLatin1());
-        for(int num=0;num<reportSummary.size();num++)
-        {
-            report.write((reportSummary[num]+"\n").toLatin1());
-        }
-        report.write(QString("\nSuccess: %1\nFailed: %2\n").arg(reportSuccessCounter).arg(reportFailedCounter).toLatin1());
-        report.write(QString("\nTests end at %1 %2\n").arg(date.toString("dd.MM.yyyy")).arg(time.toString("HH:mm:ss")).toLatin1());
+        writeSummaryToReport();
+        reportFile.close();
 
-        report.close();
-
+/*        QEventLoop loop;
+        QTimer::singleShot(3000, &loop, SLOT(quit()));
+        loop.exec();
+*/
+        dltTestRobot.send(QString("disconnectAllEcu"));
         dltTestRobot.send(QString("clearFile"));
     }
     else if(text=="failed")
@@ -487,10 +494,10 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
 
         // write to report
         QTime time = QTime::currentTime();
-        report.write(QString("%1 test FAILED\n").arg(time.toString("HH:mm:ss")).toLatin1());
-        report.flush();
+        reportFile.write(QString("%1 test FAILED\n").arg(time.toString("HH:mm:ss")).toLatin1());
+        reportFile.flush();
 
-        reportSummary.append(QString("FAILED %1 (%2/%3)").arg(dltTestRobot.testId(testNum)).arg(testRepeatNum+1).arg(testRepeat));
+        reportSummaryList.append(QString("FAILED %1 (%2/%3)").arg(dltTestRobot.testId(testNum)).arg(testRepeatNum+1).arg(testRepeat));
         reportFailedCounter++;
         dltTestRobot.send(QString("marker"));
 
@@ -502,18 +509,14 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         ui->lineEditCurrentCommand->setPalette(palette);
         ui->lineEditCurrentCommand->setText(text);
 
-        // write summary
-        QTime time = QTime::currentTime();
-        QDate date = QDate::currentDate();
-        report.write(QString("\nSummary\n").toLatin1());
-        for(int num=0;num<reportSummary.size();num++)
-        {
-            report.write((reportSummary[num]+"\n").toLatin1());
-        }
-        report.write(QString("\nSuccess: %1\nFailed: %2\n").arg(reportSuccessCounter).arg(reportFailedCounter).toLatin1());
-        report.write(QString("\nTests STOPPED at %1 %2\n").arg(date.toString("dd.MM.yyyy")).arg(time.toString("HH:mm:ss")).toLatin1());
+        writeSummaryToReport();
+        reportFile.close();
 
-        report.close();
+/*        QEventLoop loop;
+        QTimer::singleShot(3000, &loop, SLOT(quit()));
+        loop.exec();
+*/
+        dltTestRobot.send(QString("disconnectAllEcu"));
         dltTestRobot.send(QString("clearFile"));
     }
     else
@@ -527,9 +530,23 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
 
         // write to report
         QTime time = QTime::currentTime();
-        report.write(QString("%1 test step %2 %3\n").arg(time.toString("HH:mm:ss")).arg(commandNum).arg(text).toLatin1());
-        report.flush();
+        reportFile.write(QString("%1 test step %2 %3\n").arg(time.toString("HH:mm:ss")).arg(commandNum).arg(text).toLatin1());
+        reportFile.flush();
     }
+}
+
+void Dialog::writeSummaryToReport()
+{
+    // write summary
+    QTime time = QTime::currentTime();
+    QDate date = QDate::currentDate();
+    reportFile.write(QString("\nSummary\n").toLatin1());
+    for(int num=0;num<reportSummaryList.size();num++)
+    {
+        reportFile.write((reportSummaryList[num]+"\n").toLatin1());
+    }
+    reportFile.write(QString("\nSuccess: %1\nFailed: %2\n").arg(reportSuccessCounter).arg(reportFailedCounter).toLatin1());
+    reportFile.write(QString("\nTests STOPPED at %1 %2\n").arg(date.toString("dd.MM.yyyy")).arg(time.toString("HH:mm:ss")).toLatin1());
 }
 
 void Dialog::on_checkBoxAutoloadTests_clicked(bool checked)

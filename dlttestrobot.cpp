@@ -198,7 +198,9 @@ void DLTTestRobot::readyRead()
 
             QStringList list = text.split(' ');
 
-            QString currentCommand = tests[testNum].at(commandNum);
+            QString currentCommand;
+            if(testNum>=0 && testNum<tests.size())
+                currentCommand= tests[testNum].at(commandNum);
             QStringList listCommand = currentCommand.split(' ');
 
             if(listCommand.size()>=7 && list.size()>=5 && listCommand[0]=="find" && listCommand[3]==list[0] && listCommand[4]==list[1] && listCommand[5]==list[2])
@@ -214,7 +216,7 @@ void DLTTestRobot::readyRead()
                     qDebug() << "DltTestRobot: find equal" << listCommand.join(' ');
                     if(text.contains(listCommand.join(' ')))
                     {
-                        emit this->text(text);
+                        emit this->report(text);
                         qDebug() << "DltTestRobot: find equal matches";
                         timer.stop();
                         commandNum++;
@@ -228,7 +230,7 @@ void DLTTestRobot::readyRead()
                     qDebug() << "DltTestRobot: find greater" << commandValue;
                     if(value>commandValue)
                     {
-                        emit this->text(list[4]);
+                        emit this->report(list[4]);
                         qDebug() << "DltTestRobot: find greater matches";
                         timer.stop();
                         commandNum++;
@@ -242,7 +244,7 @@ void DLTTestRobot::readyRead()
                     qDebug() << "DltTestRobot: find smaller" << commandValue;
                     if(value<commandValue)
                     {
-                        emit this->text(list[4]);
+                        emit this->report(list[4]);
                         qDebug() << "DltTestRobot: find smaller matches";
                         timer.stop();
                         commandNum++;
@@ -250,7 +252,15 @@ void DLTTestRobot::readyRead()
                     }
                 }
             }
-
+            else if(listCommand.size()==7 && list.size()>=5 &&  listCommand[0]=="measure" && listCommand[2]==list[0] && listCommand[3]==list[1] && listCommand[4]==list[2] && listCommand[5]==list[3])
+            {
+                qDebug() << "DltTestRobot: measure" << listCommand[6] << list[4];
+                emit this->report(QString("Measure %1 %2").arg(listCommand[6]).arg(list[4]));
+                emit this->reportSummary(QString("Measure %1 %2").arg(listCommand[6]).arg(list[4]));
+                timer.stop();
+                commandNum++;
+                runTest();
+            }
         }
     }
 
@@ -447,6 +457,12 @@ void DLTTestRobot::runTest()
             qDebug() << "DLTTestRobot: start find timer" << list[2].toUInt();
             return;
         }
+        else if(list.size()>=2 && list[0]=="measure")
+        {
+            timer.start(list[1].toUInt());
+            qDebug() << "DLTTestRobot: start measure timer" << list[1].toUInt();
+            return;
+        }
         else
         {
             send(currentCommand);
@@ -563,7 +579,7 @@ void DLTTestRobot::timeout()
     QString currentCommand = tests[testNum].at(commandNum);
     QStringList list = currentCommand.split(' ');
 
-    if(list.size()>=1 && list[0]!="wait")
+    if(list.size()>=1 && list[0]!="wait" && list[0]!= "measure")
     {
         failed++;
         command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"failed");

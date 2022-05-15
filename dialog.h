@@ -43,7 +43,8 @@ private slots:
     // Status of Test Robot and DLT connection
     void statusTestRobot(QString text);
     void statusDlt(QString text);
-    void text(QString text);
+    void report(QString text);
+    void reportSummary(QString text);
 
     // Settings and Info
     void on_pushButtonSettings_clicked();
@@ -74,8 +75,8 @@ private:
     DLTTestRobot dltTestRobot;
     DLTMiniServer dltMiniServer;
 
-    QFile report;
-    QStringList reportSummary;
+    QFile reportFile;
+    QStringList reportSummaryList;
     int reportFailedCounter,reportSuccessCounter;
 
     // Settings
@@ -83,6 +84,8 @@ private:
     void updateSettings();
 
     void loadTests(QString fileName);
+
+    void writeSummaryToReport();
 
 };
 #endif // DIALOG_H

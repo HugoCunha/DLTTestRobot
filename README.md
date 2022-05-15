@@ -28,6 +28,8 @@ The follwoing commands are currently supported:
 * clearfile
 * quitDltViewer
 * marker
+* connectAllEcu
+* disconnectAllEcu
 
 The DLt Viewer plugin sends back the filtered DLT messages in the format ending with a newline '\n':
 
@@ -102,6 +104,9 @@ Github Sponsors:
 
 v0.1.2:
 
+* All tests enabled by default
+* Connect and Disconnect all ECUs in DLT Viewer
+* New command to measure power consumption and write to report summary
 * Output found DLT message
 * Fixed DLT find single word
 * DLT file output also in reports directory

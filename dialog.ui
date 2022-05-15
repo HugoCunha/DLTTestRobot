@@ -139,6 +139,9 @@
         <property name="text">
          <string>Run all tests</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item row="9" column="0" colspan="2">
