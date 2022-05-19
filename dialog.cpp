@@ -79,11 +79,15 @@ Dialog::Dialog(bool autostart,QString configuration,QWidget *parent)
         restoreSettings();
     }
 
+    ui->pushButtonStartTest->setEnabled(false);
+
     // autostart, when activated in global settings or by command line
     if(autostartGlobal || autostart)
     {
         on_pushButtonStart_clicked();
     }
+
+    ui->pushButtonStopTest->setEnabled(false);
 }
 
 Dialog::~Dialog()
@@ -120,9 +124,10 @@ void Dialog::on_pushButtonStart_clicked()
     ui->pushButtonDefaultSettings->setDisabled(true);
     ui->pushButtonLoadSettings->setDisabled(true);
     ui->pushButtonSettings->setDisabled(true);
+    ui->pushButtonStartTest->setEnabled(true);
+    ui->pushButtonStopTest->setEnabled(false);
 
     //connect(&dltTestRobot, SIGNAL(message(unsigned int,QByteArray)), this, SLOT(message(unsigned int,QByteArray)));
-
 }
 
 void Dialog::on_pushButtonStop_clicked()
@@ -142,6 +147,9 @@ void Dialog::on_pushButtonStop_clicked()
     ui->pushButtonDefaultSettings->setDisabled(false);
     ui->pushButtonLoadSettings->setDisabled(false);
     ui->pushButtonSettings->setDisabled(false);
+    ui->pushButtonStartTest->setEnabled(false);
+    ui->pushButtonStopTest->setEnabled(false);
+
 }
 
 void Dialog::statusTestRobot(QString text)
@@ -369,6 +377,19 @@ void Dialog::loadTests(QString fileName)
 
 void Dialog::on_pushButtonStartTest_clicked()
 {
+    startTests();
+}
+
+void Dialog::on_pushButtonStopTest_clicked()
+{
+    dltTestRobot.stopTest();
+
+    dltMiniServer.sendValue("test stopped ",DLT_LOG_FATAL);
+}
+
+void Dialog::startTests()
+{
+    // update Command Number
     ui->lineEditCmdNo->setText(QString("%1/%2").arg(0).arg(dltTestRobot.testSize(ui->comboBoxTestName->currentIndex())));
 
     // create and write to report
@@ -389,30 +410,67 @@ void Dialog::on_pushButtonStartTest_clicked()
     reportFile.write(QString("\nTest Version: %1\n\n").arg(dltTestRobot.getVersion()).toLatin1());
     reportFile.flush();
 
+    // open new DLt file and connect all ECUs
     if(ui->checkBoxRunAllTest->isChecked())
         dltTestRobot.send(QString("newFile ")+QDir::currentPath()+date.toString("\\reports\\yyyyMMdd_")+time.toString("HHmmss_")+QFileInfo(dltTestRobot.getTestsFilename()).baseName()+"_Logs.dlt");
     else
         dltTestRobot.send(QString("newFile ")+QDir::currentPath()+date.toString("\\reports\\yyyyMMdd_")+time.toString("HHmmss_")+dltTestRobot.testId(ui->comboBoxTestName->currentIndex())+"_Logs.dlt");
-
     dltTestRobot.send(QString("connectAllEcu"));
 
+    // update UI
+    ui->pushButtonStartTest->setEnabled(false);
+    ui->pushButtonStopTest->setEnabled(true);
+    ui->pushButtonTestLoad->setEnabled(false);
+    ui->comboBoxTestName->setEnabled(false);
+    ui->checkBoxRunAllTest->setEnabled(false);
+    ui->lineEditRepeat->setEnabled(false);
+    ui->pushButtonStop->setEnabled(false);
+
+    // wait for DLT file is opened
     QEventLoop loop;
     QTimer::singleShot(3000, &loop, SLOT(quit()));
     loop.exec();
 
+    // start the tests and write info to log
     dltMiniServer.sendValue2("Tests start",QFileInfo(dltTestRobot.getTestsFilename()).baseName());
-
     if(ui->checkBoxRunAllTest->isChecked())
         dltTestRobot.startTest(-1,ui->lineEditRepeat->text().toInt());
     else
         dltTestRobot.startTest(ui->comboBoxTestName->currentIndex(),ui->lineEditRepeat->text().toInt());
 }
 
-void Dialog::on_pushButtonStopTest_clicked()
+void Dialog::stopTests()
 {
-    dltTestRobot.stopTest();
+    // write summary and close report
+    writeSummaryToReport();
+    reportFile.close();
 
-    dltMiniServer.sendValue("test stopped ",DLT_LOG_FATAL);
+    // close DLT file and disconnect ECUs
+    dltTestRobot.send(QString("disconnectAllEcu"));
+    dltTestRobot.send(QString("clearFile"));
+
+    // update UI
+    ui->pushButtonStartTest->setEnabled(true);
+    ui->pushButtonStopTest->setEnabled(false);
+    ui->pushButtonTestLoad->setEnabled(true);
+    ui->comboBoxTestName->setEnabled(true);
+    ui->checkBoxRunAllTest->setEnabled(true);
+    ui->lineEditRepeat->setEnabled(true);
+    ui->pushButtonStop->setEnabled(true);
+}
+
+void Dialog::writeSummaryToReport()
+{
+    // write summary
+    QTime time = QTime::currentTime();
+    QDate date = QDate::currentDate();
+    reportFile.write(QString("\nSummary\n").toLatin1());
+    for(int num=0;num<reportSummaryList.size();num++)
+    {
+        reportFile.write((reportSummaryList[num]+"\n").toLatin1());
+    }
+    reportFile.write(QString("\nSuccess: %1\nFailed: %2\n").arg(reportSuccessCounter).arg(reportFailedCounter).toLatin1());
+    reportFile.write(QString("\nTests STOPPED at %1 %2\n").arg(date.toString("dd.MM.yyyy")).arg(time.toString("HH:mm:ss")).toLatin1());
 }
 
 void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,int testRepeat,int testNum, int commandNum,int commandCount, QString text)
@@ -477,15 +535,8 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         ui->lineEditCurrentCommand->setText(text);
         dltMiniServer.sendValue2("Tests end",QFileInfo(dltTestRobot.getTestsFilename()).baseName());
 
-        writeSummaryToReport();
-        reportFile.close();
+        stopTests();
 
-/*        QEventLoop loop;
-        QTimer::singleShot(3000, &loop, SLOT(quit()));
-        loop.exec();
-*/
-        dltTestRobot.send(QString("disconnectAllEcu"));
-        dltTestRobot.send(QString("clearFile"));
     }
     else if(text=="failed")
     {
@@ -512,15 +563,7 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
         ui->lineEditCurrentCommand->setPalette(palette);
         ui->lineEditCurrentCommand->setText(text);
 
-        writeSummaryToReport();
-        reportFile.close();
-
-/*        QEventLoop loop;
-        QTimer::singleShot(3000, &loop, SLOT(quit()));
-        loop.exec();
-*/
-        dltTestRobot.send(QString("disconnectAllEcu"));
-        dltTestRobot.send(QString("clearFile"));
+        stopTests();
     }
     else
     {
@@ -538,26 +581,10 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
     }
 }
 
-void Dialog::writeSummaryToReport()
-{
-    // write summary
-    QTime time = QTime::currentTime();
-    QDate date = QDate::currentDate();
-    reportFile.write(QString("\nSummary\n").toLatin1());
-    for(int num=0;num<reportSummaryList.size();num++)
-    {
-        reportFile.write((reportSummaryList[num]+"\n").toLatin1());
-    }
-    reportFile.write(QString("\nSuccess: %1\nFailed: %2\n").arg(reportSuccessCounter).arg(reportFailedCounter).toLatin1());
-    reportFile.write(QString("\nTests STOPPED at %1 %2\n").arg(date.toString("dd.MM.yyyy")).arg(time.toString("HH:mm:ss")).toLatin1());
-}
-
 void Dialog::on_checkBoxAutoloadTests_clicked(bool checked)
 {
+    // store chnaged setting in registry
     QSettings settings;
     settings.setValue("autoloadTests/checked",checked);
 }
 
-void Dialog::on_checkBoxRunAllTest_clicked(bool checked)
-{
-}

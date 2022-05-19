@@ -103,8 +103,10 @@ Github Sponsors:
 
 ## Changes
 
-v0.1.3:
+v0.1.3 Beta:
 
+* Fix DLT Test Robot Connection state
+* Improve usability
 * Wait random time
 
 v0.1.2:

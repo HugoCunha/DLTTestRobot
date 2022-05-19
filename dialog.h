@@ -67,8 +67,6 @@ private slots:
 
     void on_pushButtonStopTest_clicked();
 
-    void on_checkBoxRunAllTest_clicked(bool checked);
-
 private:
     Ui::Dialog *ui;
 
@@ -84,6 +82,9 @@ private:
     void updateSettings();
 
     void loadTests(QString fileName);
+
+    void startTests();
+    void stopTests();
 
     void writeSummaryToReport();
 

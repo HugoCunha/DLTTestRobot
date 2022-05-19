@@ -100,11 +100,15 @@ void DLTTestRobot::start()
     connect(&tcpSocket, SIGNAL(hostFound()), this, SLOT(hostFound()));
     connect(&tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(error(QAbstractSocket::SocketError)));
 
-    tcpSocket.connectToHost("localhost",4490);
+    status("connect");
+
+    tcpSocket.connectToHost("localhost",4490);    
+
+    // if it is already connected set connected state
+    if(tcpSocket.state()==QAbstractSocket::ConnectedState)
+        status("connected");
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
-
-    status("connect");
 }
 
 void DLTTestRobot::stop()
