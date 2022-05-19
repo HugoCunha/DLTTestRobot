@@ -218,7 +218,7 @@ void DLTTestRobot::readyRead()
                     listCommand.removeAt(0);
                     listCommand.removeAt(0);
                     listCommand.removeAt(0);
-                    qDebug() << "DltTestRobot: find equal" << listCommand.join(' ');
+                    //qDebug() << "DltTestRobot: find equal" << listCommand.join(' ');
                     if(text.contains(listCommand.join(' ')))
                     {
                         emit this->report(text);
@@ -391,6 +391,10 @@ void DLTTestRobot::readTests(const QString &filename)
 
 void DLTTestRobot::startTest(int num,int repeat)
 {
+    emit statusTests("Prerun");
+    timer.start(3000);
+    state = Prerun;
+
     if(repeat<1)
         allTestRepeat = 1;
     else
@@ -407,21 +411,7 @@ void DLTTestRobot::startTest(int num,int repeat)
         allTests = false;
         testNum = num;
     }
-    testCount = tests.size();
 
-    testRepeat = tests[testNum].getRepeat();
-    testRepeatNum = 0;
-
-    commandCount = tests[testNum].size();
-    commandNum = 0;
-
-    failed = 0;
-
-    qDebug() << "DLTTestRobot: start test" << tests[testNum].getId();
-
-    command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"started");
-
-    runTest();
 }
 
 void DLTTestRobot::stopTest()
@@ -435,6 +425,10 @@ void DLTTestRobot::stopTest()
         testNum = -1;
         commandNum = -1;
     }
+
+    emit statusTests("Postrun");
+    timer.start(3000);
+    state = Postrun;
 
     qDebug() << "DLTTestRobot: stopped test" ;
 }
@@ -557,6 +551,10 @@ bool DLTTestRobot::nextTest()
 
     qDebug() << "DLTTestRobot: all tests done" ;
 
+    emit statusTests("Postrun");
+    timer.start(3000);
+    state = Postrun;
+
     return false;
 }
 
@@ -591,22 +589,52 @@ void DLTTestRobot::timeout()
 
     qDebug() << "DLTTestRobot: timer expired";
 
-    QString currentCommand = tests[testNum].at(commandNum);
-    QStringList list = currentCommand.split(' ');
-
-    if(list.size()>=1 && list[0]!="wait" && list[0]!= "measure")
+    if(state==Prerun)
     {
-        failed++;
-        command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"failed");
+        state = Running;
+        emit statusTests("Running");
 
-        qDebug() << "DLTTestRobot: end test" << tests[testNum].getId();
+        testCount = tests.size();
 
-        nextTest();
+        testRepeat = tests[testNum].getRepeat();
+        testRepeatNum = 0;
 
-        return;
+        commandCount = tests[testNum].size();
+        commandNum = 0;
+
+        failed = 0;
+
+        qDebug() << "DLTTestRobot: start test" << tests[testNum].getId();
+
+        command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"started");
+
+        runTest();
     }
+    else if(state==Running)
+    {
+        QString currentCommand = tests[testNum].at(commandNum);
+        QStringList list = currentCommand.split(' ');
 
-    commandNum++;
+        if(list.size()>=1 && list[0]!="wait" && list[0]!= "measure")
+        {
+            failed++;
+            command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"failed");
 
-    runTest();
+            qDebug() << "DLTTestRobot: end test" << tests[testNum].getId();
+
+            nextTest();
+
+            return;
+        }
+
+        commandNum++;
+
+        runTest();
+
+    }
+    else if(state==Postrun)
+    {
+        state = Finished;
+        emit statusTests("Finished");
+    }
 }

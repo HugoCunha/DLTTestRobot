@@ -42,6 +42,7 @@ private slots:
 
     // Status of Test Robot and DLT connection
     void statusTestRobot(QString text);
+    void statusTests(QString text);
     void statusDlt(QString text);
     void report(QString text);
     void reportSummary(QString text);

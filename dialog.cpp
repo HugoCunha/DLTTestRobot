@@ -42,6 +42,7 @@ Dialog::Dialog(bool autostart,QString configuration,QWidget *parent)
 
     // connect status slots
     connect(&dltTestRobot, SIGNAL(status(QString)), this, SLOT(statusTestRobot(QString)));
+    connect(&dltTestRobot, SIGNAL(statusTests(QString)), this, SLOT(statusTests(QString)));
     connect(&dltTestRobot, SIGNAL(report(QString)), this, SLOT(report(QString)));
     connect(&dltTestRobot, SIGNAL(reportSummary(QString)), this, SLOT(reportSummary(QString)));
     connect(&dltMiniServer, SIGNAL(status(QString)), this, SLOT(statusDlt(QString)));
@@ -184,6 +185,53 @@ void Dialog::statusTestRobot(QString text)
         palette.setColor(QPalette::Base,Qt::red);
         ui->lineEditStatusTestRobot->setPalette(palette);
         ui->lineEditStatusTestRobot->setText(text);
+    }
+}
+
+void Dialog::statusTests(QString text)
+{
+    // status from Tests
+
+    if(text == "Prerun")
+    {
+        QPalette palette;
+        palette.setColor(QPalette::Base,Qt::green);
+        ui->lineEditCurrentCommand->setPalette(palette);
+        ui->lineEditCurrentCommand->setText(text);
+    }
+    else if(text == "Running")
+    {
+        QPalette palette;
+        palette.setColor(QPalette::Base,Qt::green);
+        ui->lineEditCurrentCommand->setPalette(palette);
+        ui->lineEditCurrentCommand->setText(text);
+    }
+    else if(text == "Postrun")
+    {
+        QPalette palette;
+        palette.setColor(QPalette::Base,Qt::green);
+        ui->lineEditCurrentCommand->setPalette(palette);
+        ui->lineEditCurrentCommand->setText(text);
+    }
+    else if(text == "Finished")
+    {
+        QPalette palette;
+        palette.setColor(QPalette::Base,Qt::green);
+        ui->lineEditCurrentCommand->setPalette(palette);
+        ui->lineEditCurrentCommand->setText(text);
+
+        // close DLT file and disconnect ECUs
+        dltTestRobot.send(QString("disconnectAllEcu"));
+        dltTestRobot.send(QString("clearFile"));
+
+        // update UI
+        ui->pushButtonStartTest->setEnabled(true);
+        ui->pushButtonStopTest->setEnabled(false);
+        ui->pushButtonTestLoad->setEnabled(true);
+        ui->comboBoxTestName->setEnabled(true);
+        ui->checkBoxRunAllTest->setEnabled(true);
+        ui->lineEditRepeat->setEnabled(true);
+        ui->pushButtonStop->setEnabled(true);
     }
 }
 
@@ -426,11 +474,6 @@ void Dialog::startTests()
     ui->lineEditRepeat->setEnabled(false);
     ui->pushButtonStop->setEnabled(false);
 
-    // wait for DLT file is opened
-    QEventLoop loop;
-    QTimer::singleShot(3000, &loop, SLOT(quit()));
-    loop.exec();
-
     // start the tests and write info to log
     dltMiniServer.sendValue2("Tests start",QFileInfo(dltTestRobot.getTestsFilename()).baseName());
     if(ui->checkBoxRunAllTest->isChecked())
@@ -444,19 +487,6 @@ void Dialog::stopTests()
     // write summary and close report
     writeSummaryToReport();
     reportFile.close();
-
-    // close DLT file and disconnect ECUs
-    dltTestRobot.send(QString("disconnectAllEcu"));
-    dltTestRobot.send(QString("clearFile"));
-
-    // update UI
-    ui->pushButtonStartTest->setEnabled(true);
-    ui->pushButtonStopTest->setEnabled(false);
-    ui->pushButtonTestLoad->setEnabled(true);
-    ui->comboBoxTestName->setEnabled(true);
-    ui->checkBoxRunAllTest->setEnabled(true);
-    ui->lineEditRepeat->setEnabled(true);
-    ui->pushButtonStop->setEnabled(true);
 }
 
 void Dialog::writeSummaryToReport()
@@ -476,7 +506,6 @@ void Dialog::writeSummaryToReport()
 void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,int testRepeat,int testNum, int commandNum,int commandCount, QString text)
 {
     ui->lineEditCmdNo->setText(QString("%1/%2").arg(commandNum+1).arg(commandCount));
-    ui->lineEditCurrentCommand->setText(text);
     ui->lineEditRepeatNo->setText(QString("%1/%2").arg(allTestRepeatNum+1).arg(allTestRepeat));
     ui->lineEditTestRepeatNo->setText(QString("%1/%2").arg(testRepeatNum+1).arg(testRepeat));
     ui->lineEditCurrentTest->setText(QString("%1 (%2)").arg(dltTestRobot.testId(testNum)).arg(dltTestRobot.testDescription(testNum)));
@@ -497,10 +526,6 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
 
     if(text=="started")
     {
-        QPalette palette;
-        palette.setColor(QPalette::Base,Qt::green);
-        ui->lineEditCurrentCommand->setPalette(palette);
-        ui->lineEditCurrentCommand->setText(text);
         dltMiniServer.sendValue2("test start",dltTestRobot.testId(testNum));
         ui->listWidgetCommands->clear();
         ui->listWidgetCommands->addItems(dltTestRobot.getTest(testNum).getCommands());
@@ -513,10 +538,6 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
     }
     else if(text=="end success")
     {
-        QPalette palette;
-        palette.setColor(QPalette::Base,Qt::green);
-        ui->lineEditCurrentCommand->setPalette(palette);
-        ui->lineEditCurrentCommand->setText(text);
         dltMiniServer.sendValue2("test end success",dltTestRobot.testId(testNum));
 
         // write to report
@@ -529,10 +550,6 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
     }
     else if(text=="end")
     {
-        QPalette palette;
-        palette.setColor(QPalette::Base,Qt::green);
-        ui->lineEditCurrentCommand->setPalette(palette);
-        ui->lineEditCurrentCommand->setText(text);
         dltMiniServer.sendValue2("Tests end",QFileInfo(dltTestRobot.getTestsFilename()).baseName());
 
         stopTests();
@@ -540,10 +557,6 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
     }
     else if(text=="failed")
     {
-        QPalette palette;
-        palette.setColor(QPalette::Base,Qt::red);
-        ui->lineEditCurrentCommand->setPalette(palette);
-        ui->lineEditCurrentCommand->setText(text);
         dltMiniServer.sendValue2("test failed",dltTestRobot.testId(testNum),DLT_LOG_FATAL);
 
         // write to report
@@ -558,19 +571,10 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
     }
     else if(text=="stopped")
     {
-        QPalette palette;
-        palette.setColor(QPalette::Base,Qt::red);
-        ui->lineEditCurrentCommand->setPalette(palette);
-        ui->lineEditCurrentCommand->setText(text);
-
         stopTests();
     }
     else
     {
-        QPalette palette;
-        palette.setColor(QPalette::Base,Qt::white);
-        ui->lineEditCurrentCommand->setPalette(palette);
-        ui->lineEditCurrentCommand->setText("running");
         ui->listWidgetCommands->setCurrentRow(commandNum);
         dltMiniServer.sendValue3("test step",QString("%1").arg(commandNum),text);
 

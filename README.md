@@ -105,6 +105,7 @@ Github Sponsors:
 
 v0.1.3 Beta:
 
+* Cleanup Test State and Status
 * Fix DLT Test Robot Connection state
 * Improve usability
 * Wait random time
