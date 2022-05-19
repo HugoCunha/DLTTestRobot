@@ -61,7 +61,8 @@ The following test commands inside a test can be used:
 * filter clear
 * filter add <ecuId> <appId> <ctxId>
 * injection <ecuId> <command>
-* sleep <time in ms>
+* wait <time in ms>
+* wait <min in ms> <max in ms>
 * find equal <time in ms> <ecuId> <appId> <ctxId> <find text>
 * find greater <time in ms> <ecuId> <appId> <ctxId> <valueId> <value>
 * find smaller <time in ms> <ecuId> <appId> <ctxId> <valueId> <value>
@@ -101,6 +102,10 @@ Github Sponsors:
 [:heart: Sponsor](https://github.com/sponsors/alexmucde)
 
 ## Changes
+
+v0.1.3:
+
+* Wait random time
 
 v0.1.2:
 

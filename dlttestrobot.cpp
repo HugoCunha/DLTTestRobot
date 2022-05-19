@@ -17,6 +17,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QSerialPortInfo>
+#include <QRandomGenerator>
 
 DLTTest::DLTTest()
 {
@@ -194,7 +195,7 @@ void DLTTestRobot::readyRead()
             text.chop(1);
 
             // line is not empty
-            qDebug() << "DltTestRobot: readLine" << text;
+            //qDebug() << "DltTestRobot: readLine" << text;
 
             QStringList list = text.split(' ');
 
@@ -447,7 +448,17 @@ void DLTTestRobot::runTest()
 
         if(list.size()>=2 && list[0]=="wait")
         {
-            timer.start(list[1].toUInt());
+            if(list.size()==3)
+            {
+                // Random wait
+                uint waitTime = QRandomGenerator::global()->bounded(list[1].toUInt(), list[2].toUInt());
+                qDebug() << "DLTTestRobot: start random wait timer" << waitTime;
+                timer.start(waitTime);
+                emit this->report(QString("Random Wait %1").arg(waitTime));
+                emit this->reportSummary(QString("Random Wait %1").arg(waitTime));
+            }
+            else
+                timer.start(list[1].toUInt());
             qDebug() << "DLTTestRobot: start wait timer" << list[1].toUInt();
             return;
         }
