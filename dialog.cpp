@@ -499,7 +499,7 @@ void Dialog::writeSummaryToReport()
     {
         reportFile.write((reportSummaryList[num]+"\n").toLatin1());
     }
-    reportFile.write(QString("\nSuccess: %1\nFailed: %2\n").arg(reportSuccessCounter).arg(reportFailedCounter).toLatin1());
+    reportFile.write(QString("\nSuccess tests: %1\nFailed tests: %2\nFailed test commands: %3\n").arg(reportSuccessCounter).arg(reportFailedCounter).arg(dltTestRobot.getFailedTestCommands()).toLatin1());
     reportFile.write(QString("\nTests STOPPED at %1 %2\n").arg(date.toString("dd.MM.yyyy")).arg(time.toString("HH:mm:ss")).toLatin1());
 }
 
@@ -509,9 +509,9 @@ void Dialog::command(int allTestRepeatNum,int allTestRepeat, int testRepeatNum,i
     ui->lineEditRepeatNo->setText(QString("%1/%2").arg(allTestRepeatNum+1).arg(allTestRepeat));
     ui->lineEditTestRepeatNo->setText(QString("%1/%2").arg(testRepeatNum+1).arg(testRepeat));
     ui->lineEditCurrentTest->setText(QString("%1 (%2)").arg(dltTestRobot.testId(testNum)).arg(dltTestRobot.testDescription(testNum)));
-    ui->lineEditFailed->setText(QString("%1").arg(dltTestRobot.getFailed()));
+    ui->lineEditFailed->setText(QString("%1").arg(dltTestRobot.getFailedTestCommands()));
 
-    if(dltTestRobot.getFailed()>0)
+    if(dltTestRobot.getFailedTestCommands()>0)
     {
         QPalette palette;
         palette.setColor(QPalette::Base,Qt::red);

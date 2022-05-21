@@ -50,6 +50,7 @@ The following commands are used in each test
 * test id <name_without_seperators>
 * test description <extended description>
 * test repeat <number>
+* test fail next|continue|stop
 * test begin
 * <test command1>
 * <test command2>
@@ -105,6 +106,7 @@ Github Sponsors:
 
 v0.1.3 Beta:
 
+* New command: test fail next|continue|stop
 * Cleanup Test State and Status
 * Fix DLT Test Robot Connection state
 * Improve usability

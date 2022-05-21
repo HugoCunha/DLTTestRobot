@@ -47,8 +47,12 @@ public:
 
     const QStringList &getCommands() const;
 
+    const QString &getFail() const;
+    void setFail(const QString &newFail);
+
 private:
     QString id;
+    QString fail;
     QString description;
     QStringList commands;
     int repeat;
@@ -80,8 +84,7 @@ public:
     void startTest(int num = -1,int repeat = 1);
     void stopTest();
 
-    int getFailed() const;
-    void setFailed(int value);
+    bool getFailed() const;
 
     DLTTest getTest(int num) { if(num>=0 && num<tests.length()) return tests[num]; else return DLTTest(); }
 
@@ -90,6 +93,8 @@ public:
     const QString &getVersion() const;
 
     bool getAllTests() const;
+
+    int getFailedTestCommands() const;
 
 signals:
 
@@ -140,7 +145,8 @@ private:
     int commandCount;
     int commandNum;
 
-    int failed;
+    bool failed;
+    int failedTestCommands;
 
 };
 
