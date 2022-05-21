@@ -116,6 +116,9 @@ private slots:
 
 private:
 
+    void successTestCommand();
+    void failedTestCommand();
+
     enum {Prerun,Running,Postrun,Finished} state;
 
     void runTest();

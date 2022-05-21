@@ -239,6 +239,24 @@ void DLTTestRobot::readyRead()
                         runTest();
                     }
                 }
+                else if(listCommand[1]=="unequal")
+                {
+                    listCommand.removeAt(0);
+                    listCommand.removeAt(0);
+                    listCommand.removeAt(0);
+                    listCommand.removeAt(0);
+                    listCommand.removeAt(0);
+                    listCommand.removeAt(0);
+                    //qDebug() << "DltTestRobot: find unequal" << listCommand.join(' ');
+                    if(text.contains(listCommand.join(' ')))
+                    {
+                        emit this->report(text);
+                        qDebug() << "DltTestRobot: find unequal matches";
+                        timer.stop();
+
+                        failedTestCommand();
+                    }
+                }
                 else if(listCommand[1]=="greater" && listCommand[6]==list[3])
                 {
                     float value = list[4].toFloat();
@@ -428,6 +446,7 @@ void DLTTestRobot::startTest(int num,int repeat)
         testNum = num;
     }
 
+    failed = false;
 }
 
 void DLTTestRobot::stopTest()
@@ -639,46 +658,10 @@ void DLTTestRobot::timeout()
 
         if(list.size()>=1 && list[0]!="wait" && list[0]!= "measure")
         {
-            failedTestCommands++;
-            failed = true;
-
-            if(tests[testNum].getFail()=="continue")
-            {
-                // continue with current test job
-                //command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"failed");
-                emit report("Command FAILED, but continue");
-                commandNum++;
-
-                qDebug() << "DLTTestRobot: fail continue current test" ;
-
-                runTest();
-            }
-            else if(tests[testNum].getFail()=="stop")
-            {
-                // stop all tests
-                emit report("Command FAILED, stop all tests");
-                command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"failed");
-                command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"end");
-
-                testNum = -1;
-                commandNum = -1;
-
-                qDebug() << "DLTTestRobot: fail stop all tests" ;
-
-                emit statusTests("Postrun");
-                timer.start(3000);
-                state = Postrun;
-            }
-            else /* tests[testNum].getFail()=="next" */
-            {
-                // default, run next test
-                emit report("Command FAILED, next test");
-                command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"failed");
-
-                qDebug() << "DLTTestRobot: fail run next test";
-
-                nextTest();
-            }
+            if(list[1]=="unequal")
+                successTestCommand();
+            else
+                failedTestCommand();
 
             return;
         }
@@ -692,4 +675,55 @@ void DLTTestRobot::timeout()
         state = Finished;
         emit statusTests("Finished");
     }
+}
+
+void DLTTestRobot::successTestCommand()
+{
+    commandNum++;
+    runTest();
+}
+
+void DLTTestRobot::failedTestCommand()
+{
+    failedTestCommands++;
+    failed = true;
+
+    if(tests[testNum].getFail()=="continue")
+    {
+        // continue with current test job
+        //command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"failed");
+        emit report("Command FAILED, but continue");
+        commandNum++;
+
+        qDebug() << "DLTTestRobot: fail continue current test" ;
+
+        runTest();
+    }
+    else if(tests[testNum].getFail()=="stop")
+    {
+        // stop all tests
+        emit report("Command FAILED, stop all tests");
+        command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"failed");
+        command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"end");
+
+        testNum = -1;
+        commandNum = -1;
+
+        qDebug() << "DLTTestRobot: fail stop all tests" ;
+
+        emit statusTests("Postrun");
+        timer.start(3000);
+        state = Postrun;
+    }
+    else /* tests[testNum].getFail()=="next" */
+    {
+        // default, run next test
+        emit report("Command FAILED, next test");
+        command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"failed");
+
+        qDebug() << "DLTTestRobot: fail run next test";
+
+        nextTest();
+    }
+
 }

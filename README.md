@@ -65,6 +65,7 @@ The following test commands inside a test can be used:
 * wait <time in ms>
 * wait <min in ms> <max in ms>
 * find equal <time in ms> <ecuId> <appId> <ctxId> <find text>
+* find unequal <time in ms> <ecuId> <appId> <ctxId> <find text>
 * find greater <time in ms> <ecuId> <appId> <ctxId> <valueId> <value>
 * find smaller <time in ms> <ecuId> <appId> <ctxId> <valueId> <value>
 
@@ -106,6 +107,7 @@ Github Sponsors:
 
 v0.1.3 Beta:
 
+* New command: find unequal
 * New command: test fail next|continue|stop
 * Cleanup Test State and Status
 * Fix DLT Test Robot Connection state
