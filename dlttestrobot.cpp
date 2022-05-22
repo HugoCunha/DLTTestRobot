@@ -235,8 +235,8 @@ void DLTTestRobot::readyRead()
                         emit this->report(text);
                         qDebug() << "DltTestRobot: find equal matches";
                         timer.stop();
-                        commandNum++;
-                        runTest();
+
+                        successTestCommand();
                     }
                 }
                 else if(listCommand[1]=="unequal")
@@ -267,8 +267,8 @@ void DLTTestRobot::readyRead()
                         emit this->report(list[4]);
                         qDebug() << "DltTestRobot: find greater matches";
                         timer.stop();
-                        commandNum++;
-                        runTest();
+
+                        successTestCommand();
                     }
                 }
                 else if(listCommand[1]=="smaller" && listCommand[6]==list[3])
@@ -281,8 +281,8 @@ void DLTTestRobot::readyRead()
                         emit this->report(list[4]);
                         qDebug() << "DltTestRobot: find smaller matches";
                         timer.stop();
-                        commandNum++;
-                        runTest();
+
+                        successTestCommand();
                     }
                 }
             }
@@ -292,8 +292,8 @@ void DLTTestRobot::readyRead()
                 emit this->report(QString("Measure %1 %2").arg(listCommand[6]).arg(list[4]));
                 emit this->reportSummary(QString("Measure %1 %2").arg(listCommand[6]).arg(list[4]));
                 timer.stop();
-                commandNum++;
-                runTest();
+
+                successTestCommand();
             }
         }
     }
@@ -339,13 +339,16 @@ void DLTTestRobot::send(QString text)
 
 }
 
-void DLTTestRobot::readTests(const QString &filename)
+QStringList DLTTestRobot::readTests(const QString &filename)
 {
+    QStringList errors;
+    int lineCounter = 0;
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly))
     {
         qDebug() << "DLTTestRobot: failed to open file" << filename;
-        return;
+        errors.append(QString("Cannot open file!"));
+        return errors;
     }
 
     testsFilename = filename;
@@ -358,69 +361,157 @@ void DLTTestRobot::readTests(const QString &filename)
     while (!in.atEnd())
     {
        QString line = in.readLine();
+       lineCounter++;
 
        if(line.size()==0)
        {
-
+            // empty line is ignored
        }
        else if(line.at(0)==';')
        {
+           // lines starting with ; are comments
            qDebug() << "DLTTestRobot: comment" << line;
        }
        else
        {
            line = line.simplified();
            QStringList list = line.split(' ');
-           if(list[0]=="test")
+           if(list.size()<1)
            {
-               if(list[1]=="id")
+               errors.append(QString("ERROR: Missing command!"));
+               errors.append(QString("=> line %1: \"%2\"").arg(lineCounter).arg(line));
+           }
+           else if(list[0]=="test")
+           {
+               if(list.size()<2)
                {
-                   qDebug() << "DLTTestRobot: id" << list[2];
-                   test.setId(list[2]);
+                   errors.append(QString("ERROR: test command must be at least 2 words!"));
+                   errors.append(QString("=> line %1: \"%2\"").arg(lineCounter).arg(line));
+               }
+               else if(list[1]=="id")
+               {
+                   if(list.size()!=3)
+                   {
+                       errors.append(QString("ERROR: test id command must be exactly 3 words!"));
+                       errors.append(QString("=> line %1: \"%2\"").arg(lineCounter).arg(line));
+                   }
+                   else
+                   {
+                       qDebug() << "DLTTestRobot: id" << list[2];
+                       test.setId(list[2]);
+                   }
                }
                else if(list[1]=="description")
                {
-                   list.removeAt(0);
-                   list.removeAt(0);
-                   qDebug() << "DLTTestRobot: description" << list.join(' ');
-                   test.setDescription(list.join(' '));
+                   if(list.size()<3)
+                   {
+                       errors.append(QString("ERROR: test description command must be at least 3 words!"));
+                       errors.append(QString("=> line %1: \"%2\"").arg(lineCounter).arg(line));
+                   }
+                   else
+                   {
+                       list.removeAt(0);
+                       list.removeAt(0);
+                       qDebug() << "DLTTestRobot: description" << list.join(' ');
+                       test.setDescription(list.join(' '));
+                   }
                }
                else if(list[1]=="repeat")
                {
-                   qDebug() << "DLTTestRobot: repeat" << list[2];
-                   test.setRepeat(list[2].toInt());
+                   if(list.size()!=3)
+                   {
+                       errors.append(QString("ERROR: test repeat command must be exactly 3 words!"));
+                       errors.append(QString("=> line %1: \"%2\"").arg(lineCounter).arg(line));
+                   }
+                   else
+                   {
+                       qDebug() << "DLTTestRobot: repeat" << list[2];
+                       test.setRepeat(list[2].toInt());
+                   }
                }
                else if(list[1]=="fail")
                {
-                   qDebug() << "DLTTestRobot: fail" << list[2];
-                   test.setFail(list[2]);
+                   if(list.size()!=3)
+                   {
+                       errors.append(QString("ERROR: test fail command must be exactly 3 words!"));
+                       errors.append(QString("=> line %1: \"%2\"").arg(lineCounter).arg(line));
+                   }
+                   else
+                   {
+                       qDebug() << "DLTTestRobot: fail" << list[2];
+                       test.setFail(list[2]);
+                   }
                }
                else if(list[1]=="begin")
                {
-                   qDebug() << "DLTTestRobot: begin" << test.getId();
-                   isTest = true;
+                   if(list.size()!=2)
+                   {
+                       errors.append(QString("ERROR: test begin command must be exactly 2 words!"));
+                       errors.append(QString("=> line %1: \"%2\"").arg(lineCounter).arg(line));
+                   }
+                   else
+                   {
+                       qDebug() << "DLTTestRobot: begin" << test.getId();
+                       isTest = true;
+                   }
                }
                else if(list[1]=="end")
                {
-                   qDebug() << "DLTTestRobot: end" << test.getId();
-                   isTest=false;
-                   tests.append(test);
-                   test.clear();
+                   if(list.size()!=2)
+                   {
+                       errors.append(QString("ERROR: test end command must be exactly 2 words!"));
+                       errors.append(QString("=> line %1: \"%2\"").arg(lineCounter).arg(line));
+                   }
+                   else
+                   {
+                       qDebug() << "DLTTestRobot: end" << test.getId();
+                       isTest=false;
+                       tests.append(test);
+                       test.clear();
+                   }
+               }
+               else
+               {
+                   errors.append(QString("ERROR: Unknown command %1!").arg(list[1]));
+                   errors.append(QString("=> line %1: \"%2\"").arg(lineCounter).arg(line));
                }
            }
            else if(list[0]=="version")
            {
-               version = list[1];
+                if(list.size()!=2)
+                {
+                    errors.append(QString("ERROR: Version must be one word!"));
+                    errors.append(QString("=> line %1: \"%2\"").arg(lineCounter).arg(line));
+                }
+                else
+                    version = list[1];
            }
            else if(isTest)
            {
-               qDebug() << "DLTTestRobot: command" << line;
-               test.append(line);
+                if(
+                    ((list.size()==2 && list[0]=="filter" && list[1]=="clear")) ||
+                    ((list.size()==5 && list[0]=="filter" && list[1]=="add")) ||
+                    ((list.size()>=3 && list[0]=="injection")) ||
+                    (((list.size()==2 || list.size()==3)  && list[0]=="wait")) ||
+                    ((list.size()>=7  && list[0]=="find" && (list[1]=="equal" || list[1]=="unequal"))) ||
+                    ((list.size()>=8 && list[0]=="find" && (list[1]=="greater" || list[1]=="smaller")))
+                  )
+                {
+                    qDebug() << "DLTTestRobot: command" << line;
+                    test.append(line);
+                }
            }
        }
     }
 
+    if(isTest)
+    {
+        errors.append(QString("ERROR: Test end is missing!"));
+    }
+
     file.close();
+
+    return errors;
 }
 
 void DLTTestRobot::startTest(int num,int repeat)
@@ -599,31 +690,6 @@ bool DLTTestRobot::nextTest()
     return false;
 }
 
-int DLTTestRobot::getFailedTestCommands() const
-{
-    return failedTestCommands;
-}
-
-bool DLTTestRobot::getAllTests() const
-{
-    return allTests;
-}
-
-const QString &DLTTestRobot::getVersion() const
-{
-    return version;
-}
-
-const QString &DLTTestRobot::getTestsFilename() const
-{
-    return testsFilename;
-}
-
-bool DLTTestRobot::getFailed() const
-{
-    return failed;
-}
-
 void DLTTestRobot::timeout()
 {
     timer.stop();
@@ -693,10 +759,9 @@ void DLTTestRobot::failedTestCommand()
         // continue with current test job
         //command(allTestRepeatNum,allTestRepeat,testRepeatNum,testRepeat,testNum,commandNum,commandCount,"failed");
         emit report("Command FAILED, but continue");
-        commandNum++;
-
         qDebug() << "DLTTestRobot: fail continue current test" ;
 
+        commandNum++;
         runTest();
     }
     else if(tests[testNum].getFail()=="stop")
@@ -726,4 +791,29 @@ void DLTTestRobot::failedTestCommand()
         nextTest();
     }
 
+}
+
+int DLTTestRobot::getFailedTestCommands() const
+{
+    return failedTestCommands;
+}
+
+bool DLTTestRobot::getAllTests() const
+{
+    return allTests;
+}
+
+const QString &DLTTestRobot::getVersion() const
+{
+    return version;
+}
+
+const QString &DLTTestRobot::getTestsFilename() const
+{
+    return testsFilename;
+}
+
+bool DLTTestRobot::getFailed() const
+{
+    return failed;
 }

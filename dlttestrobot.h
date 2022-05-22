@@ -72,7 +72,7 @@ public:
     void writeSettings(QXmlStreamWriter &xml);
     void readSettings(const QString &filename);
 
-    void readTests(const QString &filename);
+    QStringList readTests(const QString &filename);
 
     void send(QString text);
 

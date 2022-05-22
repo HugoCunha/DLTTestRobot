@@ -107,6 +107,7 @@ Github Sponsors:
 
 v0.1.3 Beta:
 
+* Add syntax check when loading test cases
 * New command: find unequal
 * New command: test fail next|continue|stop
 * Cleanup Test State and Status

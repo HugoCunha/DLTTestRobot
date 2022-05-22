@@ -413,8 +413,23 @@ void Dialog::loadTests(QString fileName)
 {
     ui->lineEditTestFile->setText(fileName);
 
-    // read the settings from XML file
-    dltTestRobot.readTests(fileName);
+    // read the tests from dtr file
+    QStringList errors = dltTestRobot.readTests(fileName);
+
+    if(!errors.isEmpty())
+    {
+        // There are some error during parsing test file
+        QMessageBox msgBox(QMessageBox::Critical,"Loading Test Cases","");
+        msgBox.setText(("Loading all Test Cases failed with following Errors:\n\n")+errors.join('\n')+("\n\nPlease fix Errors and Reload Test Cases!"));
+        msgBox.exec();
+    }
+    else
+    {
+        // Loading Test Cases were succesful
+        QMessageBox msgBox;
+        msgBox.setText(QString("Loading all Test Cases was succesful:\n\nNumber of Test Cases: %1").arg(dltTestRobot.size()));
+        msgBox.exec();
+    }
 
     ui->comboBoxTestName->clear();
     for(int num=0;num<dltTestRobot.size();num++)
