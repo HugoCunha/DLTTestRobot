@@ -261,7 +261,7 @@ void DLTTestRobot::readyRead()
                 {
                     float value = list[4].toFloat();
                     float commandValue = listCommand[7].toFloat();
-                    qDebug() << "DltTestRobot: find greater" << commandValue;
+                    //qDebug() << "DltTestRobot: find greater" << commandValue;
                     if(value>commandValue)
                     {
                         emit this->report(list[4]);
@@ -275,7 +275,7 @@ void DLTTestRobot::readyRead()
                 {
                     float value = list[4].toFloat();
                     float commandValue = listCommand[7].toFloat();
-                    qDebug() << "DltTestRobot: find smaller" << commandValue;
+                    //qDebug() << "DltTestRobot: find smaller" << commandValue;
                     if(value<commandValue)
                     {
                         emit this->report(list[4]);
@@ -438,8 +438,16 @@ QStringList DLTTestRobot::readTests(const QString &filename)
                    }
                    else
                    {
+                       if(list[2]!="next" && list[2]!="continue" && list[2]!="stop")
+                       {
+                           errors.append(QString("ERROR: test fail command is not next, continue or stop!"));
+                           errors.append(QString("=> line %1: \"%2\"").arg(lineCounter).arg(line));
+                       }
+                       else
+                       {
                        qDebug() << "DLTTestRobot: fail" << list[2];
                        test.setFail(list[2]);
+                       }
                    }
                }
                else if(list[1]=="begin")
@@ -494,12 +502,20 @@ QStringList DLTTestRobot::readTests(const QString &filename)
                     ((list.size()>=3 && list[0]=="injection")) ||
                     (((list.size()==2 || list.size()==3)  && list[0]=="wait")) ||
                     ((list.size()>=7  && list[0]=="find" && (list[1]=="equal" || list[1]=="unequal"))) ||
-                    ((list.size()>=8 && list[0]=="find" && (list[1]=="greater" || list[1]=="smaller")))
+                    ((list.size()>=8 && list[0]=="find" && (list[1]=="greater" || list[1]=="smaller"))) ||
+                    (list.size()>=7  && list[0]=="measure" )
+
                   )
                 {
                     qDebug() << "DLTTestRobot: command" << line;
                     test.append(line);
                 }
+                else
+                {
+                    errors.append(QString("ERROR: Unknown command or syntac error!"));
+                    errors.append(QString("=> line %1: \"%2\"").arg(lineCounter).arg(line));
+                }
+
            }
        }
     }

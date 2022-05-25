@@ -68,6 +68,7 @@ The following test commands inside a test can be used:
 * find unequal <time in ms> <ecuId> <appId> <ctxId> <find text>
 * find greater <time in ms> <ecuId> <appId> <ctxId> <valueId> <value>
 * find smaller <time in ms> <ecuId> <appId> <ctxId> <valueId> <value>
+* measure <time in ms> <ecuId> <appId> <ctxId> <valueId> <description>
 
 ## Installation
 
@@ -107,6 +108,8 @@ Github Sponsors:
 
 v0.1.3 Beta:
 
+* Reduce Debug output
+* Fix measure command
 * Add syntax check when loading test cases
 * New command: find unequal
 * New command: test fail next|continue|stop

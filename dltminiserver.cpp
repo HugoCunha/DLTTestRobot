@@ -157,7 +157,7 @@ void DLTMiniServer::readyRead()
                 unsigned short length = (unsigned short)(readData[3]) | ((unsigned short)(readData[2]) << 8);
                 if(readData.size()>=length)
                 {
-                    qDebug() << "DLTMiniServer: msg received with length" << length;
+                    //qDebug() << "DLTMiniServer: msg received with length" << length;
 
                     unsigned char htyp = (unsigned char)(readData[0]);
 
@@ -199,7 +199,7 @@ void DLTMiniServer::readyRead()
                                     QByteArray injectionData = readData.mid(standardHeaderLength+18,lengthData);
                                     QString injectionStr = QString::fromLatin1(injectionData);
 
-                                    qDebug() << "DLTMiniServer: injection" << injectionStr;
+                                    //qDebug() << "DLTMiniServer: injection" << injectionStr;
 
                                     injection(injectionStr);
                                 }
